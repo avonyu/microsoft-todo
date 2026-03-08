@@ -12,7 +12,7 @@ interface TodoSetDisplay extends Omit<DefaultSet, 'icon' | 'bgImg'> {
   id: string
   label: string
   icon: React.JSX.Element | null
-  bgImg: string | BgColor
+  bgImg: string
   count?: number
   card?: Card
 }
@@ -23,8 +23,6 @@ interface Card {
   content: string
 }
 
-type BgColor = "darkblue" | "darkpink" | "darkred" | "darkorange" | "darkgreen" | "darkteal" | "darkgray" | "blue" | "pink" | "red" | "orange" | "green" | "teal" | "gray"
-
 // 定义状态类型
 interface TodoAppState {
   user: User | undefined
@@ -32,6 +30,7 @@ interface TodoAppState {
   sets: TodoSet[]
   isLoading: boolean
   error: string | null
+  setBgImages: Record<string, string>
 }
 
 // 定义操作类型
@@ -45,6 +44,7 @@ interface TodoAppActions {
   deleteSet: (setId: string) => void
   updateSet: (newSet: TodoSet) => void
   clearError: () => void
+  setSetBgImage: (setId: string, bgImg: string) => void
 }
 
 type TodoAppStore = TodoAppState & TodoAppActions
@@ -59,6 +59,7 @@ export const useTodoAppStore = create<TodoAppStore>()(
         sets: [],
         isLoading: false,
         error: null,
+        setBgImages: {},
 
         // Actions - 直接在顶层，不嵌套
         setUser: (user) => set({ user }, false, 'setUser'),
@@ -118,6 +119,9 @@ export const useTodoAppStore = create<TodoAppStore>()(
         ),
 
         clearError: () => set({ error: null }, false, 'clearError'),
+        setSetBgImage: (setId, bgImg) => set((state) => ({
+          setBgImages: { ...state.setBgImages, [setId]: bgImg }
+        }), false, 'setSetBgImage'),
       }),
       {
         name: 'todo-app-storage',
@@ -141,6 +145,8 @@ export const useGetTasks = () => useTodoAppStore((state) => state.tasks)
 export const useGetSets = () => useTodoAppStore((state) => state.sets)
 export const useIsLoading = () => useTodoAppStore((state) => state.isLoading)
 export const useGetError = () => useTodoAppStore((state) => state.error)
+export const useGetSelectedBgImg = () => useTodoAppStore((state) => state.setBgImages)
+export const useGetBgImgBySetId = (setId: string) => useTodoAppStore((state) => state.setBgImages[setId])
 
 // 向后兼容：保留 useTodoActions 用于获取 actions
 export const useTodoActions = () => useTodoAppStore(useShallow((state) => ({
@@ -153,6 +159,7 @@ export const useTodoActions = () => useTodoAppStore(useShallow((state) => ({
   deleteSet: state.deleteSet,
   updateSet: state.updateSet,
   clearError: state.clearError,
+  setSetBgImage: state.setSetBgImage,
 })))
 
 // 参数化 selector - 使用 useShallow 避免不必要的重新渲染

@@ -66,5 +66,27 @@
         "content": "查看所有任务，待修改。"
       }
     }
+  ],
+  "bg_config": [
+    { "id": "#788cde", "type": "color", "value": "#788cde" },
+    { "id": "#bc7abc", "type": "color", "value": "#bc7abc" },
+    { "id": "#e46c8c", "type": "color", "value": "#e46c8c" },
+    { "id": "#E46B67", "type": "color", "value": "#E46B67" },
+    { "id": "#4AA079", "type": "color", "value": "#4AA079" },
+    { "id": "#479E98", "type": "color", "value": "#479E98" },
+    { "id": "#8795A0", "type": "color", "value": "#8795A0" },
+    { "id": "#A0CBF1", "type": "color", "value": "#A0CBF1" },
+    { "id": "#D6BDE7", "type": "color", "value": "#D6BDE7" },
+    { "id": "#F5B6C2", "type": "color", "value": "#F5B6C2" },
+    { "id": "#ECBDA2", "type": "color", "value": "#ECBDA2" },
+    { "id": "#9AD2BA", "type": "color", "value": "#9AD2BA" },
+    { "id": "#8BD3CE", "type": "color", "value": "#8BD3CE" },
+    { "id": "#BAC8D4", "type": "color", "value": "#BAC8D4" },
+    { "id": "bg-1", "type": "image", "value": "/todo-wallpapers/bg-1.png" },
+    { "id": "bg-2", "type": "image", "value": "/todo-wallpapers/bg-2.png" },
+    { "id": "bg-3", "type": "image", "value": "/todo-wallpapers/bg-3.png" },
+    { "id": "bg-4", "type": "image", "value": "/todo-wallpapers/bg-4.png" },
+    { "id": "bg-5", "type": "image", "value": "/todo-wallpapers/bg-5.png" },
+    { "id": "bg-6", "type": "image", "value": "/todo-wallpapers/bg-6.png" }
   ]
 }

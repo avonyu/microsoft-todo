@@ -9,6 +9,7 @@ import {
   useGetSets,
   useIsLoading,
   useGetError,
+  useGetSelectedBgImg,
   useGetTasksBySetId,
   useGetTodoSetById,
   useGetCountBySetId,
@@ -32,6 +33,7 @@ interface TodoState {
   sets: TodoSet[];
   isLoading: boolean;
   error: string | null;
+  setBgImages: Record<string, string>;
 }
 
 interface TodoActions {
@@ -44,6 +46,7 @@ interface TodoActions {
   updateSet: (newSet: TodoSet) => void;
   deleteSet: (setId: string) => void;
   clearError: () => void;
+  setSetBgImage: (setId: string, bgImg: string) => void;
   // Optimistic actions
   toggleTaskImportant: (taskId: string) => Promise<void>;
   toggleTaskFinish: (taskId: string) => Promise<void>;
@@ -87,6 +90,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     sets: s.sets,
     isLoading: s.isLoading,
     error: s.error,
+    setBgImages: s.setBgImages,
   })));
 
   // Get actions from Zustand store (use getState() for async operations)
@@ -100,6 +104,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     updateSet: s.updateSet,
     deleteSet: s.deleteSet,
     clearError: s.clearError,
+    setSetBgImage: s.setSetBgImage,
   })));
 
   // Helper to get fresh state in async functions (prevents stale closure)

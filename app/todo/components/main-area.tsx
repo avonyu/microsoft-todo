@@ -31,8 +31,13 @@ function MainArea() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  // Get background image - use default for custom sets without bgImg
-  const bgImage = currentSet.bgImg || DEFAULT_BG;
+  // Get background image - use setBgImages[setId] if set, otherwise use set's bgImg or default
+  const bgValue = state.setBgImages?.[setId] || currentSet.bgImg || DEFAULT_BG;
+
+  // Determine if background is a color or image
+  const isColorBackground = bgValue.startsWith("#");
+  const bgImage = isColorBackground ? undefined : bgValue;
+  const bgColor = isColorBackground ? bgValue : undefined;
 
   // Determine if this set allows task creation
   const canCreateTask = !["assigned_to_me", "flagged"].includes(setId);
@@ -73,10 +78,12 @@ function MainArea() {
       }}
       onClick={() => inputRef.current?.focus()}
       className={cn(
-        "w-full rounded-tl-md overflow-hidden bg-cover bg-center transition-all duration-300 ease-in-out",
+        "w-full rounded-tl-md overflow-hidden transition-all duration-300 ease-in-out",
+        !isColorBackground && "bg-cover bg-center",
       )}
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+        backgroundColor: bgColor,
       }}
     >
       <div className="flex flex-col px-12 h-full">
