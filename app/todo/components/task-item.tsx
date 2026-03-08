@@ -107,6 +107,30 @@ function TaskItem({
                   {task.setId ? (
                     <>
                       {/* 自定义列表图标预留位置 */}
+                      {(selectors.getTodoSetById(task.setId) as { emoji?: string }).emoji && (
+                        <span className="text-xs">{(selectors.getTodoSetById(task.setId) as { emoji?: string }).emoji}</span>
+                      )}
+                      {selectors.getTodoSetById(task.setId).label}
+                    </>
+                  ) : (
+                    <>
+                      <Home size={12} /> 任务
+                    </>
+                  )}
+                </div>
+              ) : currentSetId === "important" ? (
+                  <div className="text-xs text-gray-600 dark:text-gray-200 flex items-center gap-1">
+                    {task.isToday && (
+                    <>
+                      <Sun size={12} /> 我的一天
+                      <span className="mx-1">·</span>
+                    </>
+                  )}
+                  {task.setId ? (
+                    <>
+                      {(selectors.getTodoSetById(task.setId) as { emoji?: string }).emoji && (
+                        <span className="text-xs">{(selectors.getTodoSetById(task.setId) as { emoji?: string }).emoji}</span>
+                      )}
                       {selectors.getTodoSetById(task.setId).label}
                     </>
                   ) : (

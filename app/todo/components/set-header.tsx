@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import config from "@/app/todo/config.json"
 
 const BG_CONFIG = config.bg_config
-const EMOJI_LIST = config.emoji_list;
+const EMOJI_LIST = (config as unknown as { emoji_list: string[] }).emoji_list;
 
 export function EmojiPicker({
   onSelect,
@@ -43,7 +43,7 @@ export function EmojiPicker({
 }) {
   return (
     <div className="grid grid-cols-6 gap-1 p-2">
-      {EMOJI_LIST.map((e) => (
+      {EMOJI_LIST.map((e: string) => (
         <div
           key={e}
           onClick={() => onSelect(e)}
