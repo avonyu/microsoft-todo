@@ -10,13 +10,24 @@ export async function createTodoTask(userId: string | undefined, formData: FormD
   }
 
   try {
-    const rawFormData = Object.fromEntries(formData)
+    const content = formData.get("content") as string;
+    if (!content?.trim()) {
+      return { success: false, message: "Content is required.", data: null };
+    }
+
+    // Extract optional fields
+    const setId = formData.get("setId") as string | null;
+    const isToday = formData.get("isToday") === "true";
+    const isImportant = formData.get("isImportant") === "true";
 
     const todoItem = await prisma.todoTask.create({
       data: {
         id: crypto.randomUUID(),
         userId: userId,
-        content: (rawFormData.content as string).trim(),
+        content: content.trim(),
+        ...(setId && { setId }),
+        ...(isToday && { isToday: true }),
+        ...(isImportant && { isImportant: true }),
       },
     });
 

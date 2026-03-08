@@ -49,3 +49,51 @@ export async function getAllTodoSets(userId: string): Promise<ActionResponse<Tod
     };
   }
 }
+
+export async function updateTodoSet(setId: string, data: Partial<Omit<TodoSet, 'id' | 'userId' | 'createdAt'>>): Promise<ActionResponse<TodoSet>> {
+  try {
+    const todoSet = await prisma.todoSet.update({
+      where: {
+        id: setId,
+      },
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Todo set updated successfully',
+      data: todoSet,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to update todo set: ${error}`,
+      data: null,
+    };
+  }
+}
+
+export async function deleteTodoSet(setId: string): Promise<ActionResponse<TodoSet>> {
+  try {
+    const todoSet = await prisma.todoSet.delete({
+      where: {
+        id: setId,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Todo set deleted successfully',
+      data: todoSet,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to delete todo set: ${error}`,
+      data: null,
+    };
+  }
+}

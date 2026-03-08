@@ -19,6 +19,11 @@ import {
   changeTodoTask,
   deleteTodoTask,
 } from "@/lib/actions/todo/todo-actions";
+import {
+  createTodoSet,
+  updateTodoSet,
+  deleteTodoSet,
+} from "@/lib/actions/todo/todoset-actions";
 
 // Types for the context
 interface TodoState {
@@ -44,6 +49,9 @@ interface TodoActions {
   toggleTaskFinish: (taskId: string) => Promise<void>;
   toggleTaskToday: (taskId: string) => Promise<void>;
   deleteTaskOptimistic: (taskId: string) => Promise<void>;
+  createTodoSetOptimistic: (userId: string, name: string) => Promise<TodoSet | null>;
+  updateTodoSetOptimistic: (setId: string, data: Partial<Omit<TodoSet, 'id' | 'userId' | 'createdAt'>>) => Promise<void>;
+  deleteTodoSetOptimistic: (setId: string) => Promise<boolean>;
 }
 
 interface TodoSelectors {
@@ -236,6 +244,96 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     pendingOperations.current.delete(taskId);
   };
 
+  const createTodoSetOptimistic = async (userId: string, name: string): Promise<TodoSet | null> => {
+    const tempId = `temp-${crypto.randomUUID()}`;
+
+    // Create optimistic TodoSet
+    const optimisticSet: TodoSet = {
+      id: tempId,
+      name,
+      emoji: null,
+      bgImg: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId,
+    };
+
+    // Optimistic add
+    storeActions.addSet(optimisticSet);
+
+    // Server call
+    const res = await createTodoSet(userId, name);
+    if (res.success && res.data) {
+      // Replace temp with real data
+      storeActions.deleteSet(tempId);
+      storeActions.addSet(res.data);
+      return res.data;
+    } else {
+      // Rollback on failure
+      storeActions.deleteSet(tempId);
+      console.error('Failed to create todo set:', res.message);
+      return null;
+    }
+  };
+
+  const updateTodoSetOptimistic = async (setId: string, data: Partial<Omit<TodoSet, 'id' | 'userId' | 'createdAt'>>): Promise<void> => {
+    if (pendingOperations.current.has(setId)) return;
+    pendingOperations.current.add(setId);
+
+    const originalSet = useTodoAppStore.getState().sets.find((s) => s.id === setId);
+    if (!originalSet) {
+      pendingOperations.current.delete(setId);
+      return;
+    }
+
+    // Optimistic update
+    const optimisticSet: TodoSet = {
+      ...originalSet,
+      ...data,
+      updatedAt: new Date(),
+    };
+    storeActions.updateSet(optimisticSet);
+
+    // Server update
+    const res = await updateTodoSet(setId, data);
+    if (res.success && res.data) {
+      storeActions.updateSet(res.data);
+    } else {
+      // Rollback on failure
+      storeActions.updateSet(originalSet);
+      console.error('Failed to update todo set:', res.message);
+    }
+
+    pendingOperations.current.delete(setId);
+  };
+
+  const deleteTodoSetOptimistic = async (setId: string): Promise<boolean> => {
+    if (pendingOperations.current.has(setId)) return false;
+    pendingOperations.current.add(setId);
+
+    const originalSet = useTodoAppStore.getState().sets.find((s) => s.id === setId);
+    if (!originalSet) {
+      pendingOperations.current.delete(setId);
+      return false;
+    }
+
+    // Optimistic delete
+    storeActions.deleteSet(setId);
+
+    // Server delete
+    const res = await deleteTodoSet(setId);
+    if (!res.success) {
+      // Restore on failure
+      storeActions.addSet(originalSet);
+      console.error('Failed to delete todo set:', res.message);
+      pendingOperations.current.delete(setId);
+      return false;
+    }
+
+    pendingOperations.current.delete(setId);
+    return true;
+  };
+
   // Selectors
   const getTasksBySetId = (setId: string): TodoTask[] => {
     switch (setId) {
@@ -293,6 +391,9 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     toggleTaskFinish,
     toggleTaskToday,
     deleteTaskOptimistic,
+    createTodoSetOptimistic,
+    updateTodoSetOptimistic,
+    deleteTodoSetOptimistic,
   };
 
   const selectors: TodoSelectors = {

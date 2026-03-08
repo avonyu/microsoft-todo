@@ -39,10 +39,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { useGetUser, useGetSets } from "@/store/todo-app";
+import { useRouter, usePathname } from "next/navigation";
+import { useGetUser, useGetSets, useTodoAppStore } from "@/store/todo-app";
 import { defaultTodoSet } from "../config";
 import { cn } from "@/lib/utils";
 import { TodoSet, TodoCustomSet } from "./sets";
+import { useTodo } from "@/contexts/todo-context";
 
 function UserInfo() {
   const user = useGetUser();
@@ -103,8 +105,32 @@ function UserInfo() {
 }
 
 export default function SidePannel() {
-  const createNewTodoSet = () => {
-    // 乐观更新
+  const router = useRouter();
+  const pathname = usePathname();
+  const { actions } = useTodo();
+  const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const sets = useGetSets();
+
+  const createNewTodoSet = async () => {
+    const user = useTodoAppStore.getState().user;
+    if (!user) return;
+
+    const newSet = await actions.createTodoSetOptimistic(user.id, "无标题列表");
+    if (newSet) {
+      setEditingSetId(newSet.id);
+      router.push(`/todo/tasks/${newSet.id}`);
+    }
+  };
+
+  const handleRenameSet = (setId: string) => {
+    setEditingSetId(setId);
+  };
+
+  const handleDeleteSet = (setId: string) => {
+    // If currently viewing the deleted set, navigate to inbox
+    if (pathname === `/todo/tasks/${setId}`) {
+      router.push("/todo/tasks/inbox");
+    }
   };
 
   return (
@@ -141,8 +167,15 @@ export default function SidePannel() {
             ))}
             <Separator />
             {/* 自定义菜单 */}
-            {useGetSets().map((item) => (
-              <TodoCustomSet key={item.id} item={item} />
+            {sets.map((item) => (
+              <TodoCustomSet
+                key={item.id}
+                item={item}
+                isEditing={editingSetId === item.id}
+                onEditComplete={() => setEditingSetId(null)}
+                onRename={() => handleRenameSet(item.id)}
+                onDelete={handleDeleteSet}
+              />
             ))}
           </nav>
         </div>
