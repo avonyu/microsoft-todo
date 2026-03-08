@@ -173,7 +173,7 @@ export const useGetTasksBySetId = (setId: string) =>
       case "flagged":
         return [];
       case "inbox":
-        return state.tasks;
+        return state.tasks.filter((t) => t.setId === null);
       default:
         return state.tasks.filter((t) => t.setId === setId);
     }
@@ -189,7 +189,7 @@ export const useGetCountBySetId = (setId: string) =>
       case "planned":
         return state.tasks.filter((t) => t.dueDate !== null).length;
       case "inbox":
-        return state.tasks.filter((t) => t.userId === state.user?.id).length;
+        return state.tasks.filter((t) => t.setId === null && t.userId === state.user?.id).length;
       default:
         return state.tasks.filter((t) => t.setId === setId).length;
     }

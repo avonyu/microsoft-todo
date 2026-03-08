@@ -348,7 +348,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       case "flagged":
         return [];
       case "inbox":
-        return state.tasks;
+        return state.tasks.filter((t) => t.setId === null);
       default:
         return state.tasks.filter((t) => t.setId === setId);
     }
@@ -379,7 +379,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       case "planned":
         return state.tasks.filter((t) => t.dueDate !== null).length;
       case "inbox":
-        return state.tasks.filter((t) => t.userId === state.user?.id).length;
+        return state.tasks.filter((t) => t.setId === null && t.userId === state.user?.id).length;
       default:
         return state.tasks.filter((t) => t.setId === setId).length;
     }
