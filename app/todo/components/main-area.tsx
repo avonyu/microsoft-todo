@@ -103,7 +103,7 @@ function MainArea() {
           )}
         >
           {orderedTasks.map((task) => (
-            <TaskItem task={task} key={task.id} />
+            <TaskItem task={task} key={task.id} currentSetId={setId} />
           ))}
 
           {/* Hint card for empty state */}

@@ -1,7 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Star, Check, Sun } from "lucide-react";
+import {
+  Star,
+  StarOff,
+  Check,
+  Sun,
+  Calendar,
+  CalendarDays,
+  Trash2,
+  FolderOutput,
+  CircleCheck,
+  Circle,
+  Home,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TodoTask } from "@/generated/prisma/client";
 import { useTodo } from "@/contexts/todo-context";
@@ -31,11 +43,13 @@ import {
 function TaskItem({
   task,
   className,
+  currentSetId,
 }: {
   task: TodoTask;
   className?: string;
+  currentSetId?: string;
 }) {
-  const { actions } = useTodo();
+  const { actions, selectors } = useTodo();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleDeleteClick = () => {
@@ -88,10 +102,25 @@ function TaskItem({
               >
                 {task.content}
               </div>
-              {task.isToday && (
+              {currentSetId === "myday" ? (
                 <div className="text-xs text-gray-600 dark:text-gray-200 flex items-center gap-1">
-                  <Sun size={12} /> 我的一天
+                  {task.setId ? (
+                    <>
+                      {/* 自定义列表图标预留位置 */}
+                      {selectors.getTodoSetById(task.setId).label}
+                    </>
+                  ) : (
+                    <>
+                      <Home size={12} /> 任务
+                    </>
+                  )}
                 </div>
+              ) : (
+                task.isToday && (
+                  <div className="text-xs text-gray-600 dark:text-gray-200 flex items-center gap-1">
+                    <Sun size={12} /> 我的一天
+                  </div>
+                )
               )}
             </div>
             <button
@@ -109,39 +138,71 @@ function TaskItem({
         <ContextMenuContent>
           <ContextMenuGroup>
             <ContextMenuItem onClick={() => actions.toggleTaskToday(task.id)}>
-              添加到"我的一天"
+              <Sun className="mr-2 h-4 w-4" />
+              {task.isToday ? '从"我的一天"中删除' : '添加到"我的一天"'}
               <ContextMenuShortcut>Ctrl + T</ContextMenuShortcut>
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => actions.toggleTaskImportant(task.id)}>
-              删除重要标记
+            <ContextMenuItem
+              onClick={() => actions.toggleTaskImportant(task.id)}
+            >
+              {task.isImportant ? (
+                <StarOff className="mr-2 h-4 w-4" />
+              ) : (
+                <Star className="mr-2 h-4 w-4" />
+              )}
+              {task.isImportant ? "删除重要标记" : "标记为重要"}
             </ContextMenuItem>
             <ContextMenuItem onClick={() => actions.toggleTaskFinish(task.id)}>
-              标记为已完成
+              {task.isFinish ? (
+                <Circle className="mr-2 h-4 w-4" />
+              ) : (
+                <CircleCheck className="mr-2 h-4 w-4" />
+              )}
+              {task.isFinish ? "标记为未完成" : "标记为已完成"}
               <ContextMenuShortcut>Ctrl + D</ContextMenuShortcut>
             </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />
           <ContextMenuGroup>
-            <ContextMenuItem>今天到期</ContextMenuItem>
-            <ContextMenuItem>明天到期</ContextMenuItem>
-            <ContextMenuItem>选择日期</ContextMenuItem>
+            <ContextMenuItem>
+              <Calendar className="mr-2 h-4 w-4" />
+              今天到期
+            </ContextMenuItem>
+            <ContextMenuItem>
+              <CalendarDays className="mr-2 h-4 w-4" />
+              明天到期
+            </ContextMenuItem>
+            <ContextMenuItem>
+              <Calendar className="mr-2 h-4 w-4" />
+              选择日期
+            </ContextMenuItem>
           </ContextMenuGroup>
           <ContextMenuSeparator />
           <ContextMenuSub>
-            <ContextMenuSubTrigger>将任务移动到...</ContextMenuSubTrigger>
+            <ContextMenuSubTrigger>
+              <FolderOutput className="mr-2 h-4 w-4" />
+              将任务移动到...
+            </ContextMenuSubTrigger>
             <ContextMenuSubContent>
               <ContextMenuItem>默认任务列表</ContextMenuItem>
               <ContextMenuItem>其他任务列表</ContextMenuItem>
             </ContextMenuSubContent>
           </ContextMenuSub>
           <ContextMenuSeparator />
-          <ContextMenuItem onClick={handleDeleteClick} className="text-red-500 cursor-pointer">
+          <ContextMenuItem
+            onClick={handleDeleteClick}
+            className="text-red-500 cursor-pointer"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
             删除任务
             <ContextMenuShortcut>Delete</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>删除任务</AlertDialogTitle>

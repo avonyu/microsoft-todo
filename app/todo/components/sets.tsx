@@ -14,7 +14,17 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Pencil, Trash2, TextAlignJustify } from "lucide-react";
 
 export function TodoSet({ item }: { item: DefaultSet }) {
   const router = useRouter();
@@ -35,10 +45,14 @@ export function TodoSet({ item }: { item: DefaultSet }) {
       )}
     >
       {/* {item.icon} */}
-      {item.icon && cloneElement(
-        item.icon as React.ReactElement<{ size?: number; className?: string }>,
-        { size: 13, className: "text-gray-400" }
-      )}
+      {item.icon &&
+        cloneElement(
+          item.icon as React.ReactElement<{
+            size?: number;
+            className?: string;
+          }>,
+          { size: 13, className: "text-gray-400" },
+        )}
       {item.label}
       {count > 0 && (
         <span className="ml-auto px-1 text-xs text-gray-600 bg-gray-200 dark:bg-zinc-800 dark:text-gray-200 rounded-full p-0.5">
@@ -67,19 +81,28 @@ export function TodoCustomSet({
   const count = useGetCountBySetId(item.id);
   const { actions } = useTodo();
   const [editName, setEditName] = useState(item.name);
+  const [emoji, setEmoji] = useState(item.emoji || "");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+    if (isEditing) {
+      setEditName(item.name);
+      setEmoji(item.emoji || "");
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
     }
-  }, [isEditing]);
+  }, [isEditing, item.name, item.emoji]);
 
   const handleSave = async () => {
     const trimmedName = editName.trim();
-    if (trimmedName && trimmedName !== item.name) {
-      await actions.updateTodoSetOptimistic(item.id, { name: trimmedName });
+    if (trimmedName || emoji) {
+      await actions.updateTodoSetOptimistic(item.id, {
+        name: trimmedName || item.name,
+        emoji,
+      });
     }
     onEditComplete?.();
   };
@@ -89,11 +112,17 @@ export function TodoCustomSet({
       handleSave();
     } else if (e.key === "Escape") {
       setEditName(item.name);
+      setEmoji(item.emoji || "");
       onEditComplete?.();
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setShowDeleteDialog(false);
     const success = await actions.deleteTodoSetOptimistic(item.id);
     if (success && onDelete) {
       onDelete(item.id);
@@ -102,62 +131,99 @@ export function TodoCustomSet({
 
   if (isEditing) {
     return (
-      <input
-        ref={inputRef}
-        type="text"
-        value={editName}
-        onChange={(e) => setEditName(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={handleKeyDown}
-        className={cn(
-          "w-full px-2 py-1.5 rounded-xs text-xs border border-blue-500 outline-none",
-          "bg-white dark:bg-zinc-800"
-        )}
-      />
+      <div className="flex items-center gap-1">
+        <div className="shrink-0 p-1 rounded">
+          {emoji ? (
+            <span className="text-sm">{emoji}</span>
+          ) : (
+            <TextAlignJustify size={13} className="text-gray-400" />
+          )}
+        </div>
+
+        <input
+          ref={inputRef}
+          type="text"
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className={cn(
+            "w-full px-2 py-1.5 rounded-xs text-xs border border-blue-500 outline-none",
+            "bg-white dark:bg-zinc-800",
+          )}
+        />
+      </div>
     );
   }
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>
-        <button
-          key={item.id}
-          onClick={() => {
-            router.push(`/todo/tasks/${item.id}`);
-          }}
-          className={cn(
-            "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xs text-xs transition-colors",
-            pathname === `/todo/tasks/${item.id}`
-              ? "bg-gray-100 text-gray-800 dark:bg-zinc-700 dark:text-gray-200"
-              : "bg-transparent text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-700",
-          )}
-        >
-          {item.name}
-          {count > 0 && (
-            <span className="ml-auto text-xs text-gray-600 bg-gray-200 dark:bg-zinc-800 dark:text-gray-200 rounded-lg p-0.5">
-              {count}
-            </span>
-          )}
-        </button>
-      </ContextMenuTrigger>
-      <ContextMenuContent className="min-w-40">
-        <ContextMenuItem
-          onClick={() => onRename?.()}
-          className="cursor-pointer"
-        >
-          <Pencil className="size-4" />
-          重命名列表
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem
-          onClick={handleDelete}
-          variant="destructive"
-          className="cursor-pointer"
-        >
-          <Trash2 className="size-4" />
-          删除列表
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>
+          <button
+            key={item.id}
+            onClick={() => {
+              router.push(`/todo/tasks/${item.id}`);
+            }}
+            className={cn(
+              "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xs text-xs transition-colors",
+              pathname === `/todo/tasks/${item.id}`
+                ? "bg-gray-100 text-gray-800 dark:bg-zinc-700 dark:text-gray-200"
+                : "bg-transparent text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-700",
+            )}
+          >
+            {item.emoji ? (
+              <span className="text-sm">{item.emoji}</span>
+            ) : (
+              <TextAlignJustify size={13} className="text-gray-400" />
+            )}
+            {item.name}
+            {count > 0 && (
+              <span className="ml-auto text-xs text-gray-600 bg-gray-200 dark:bg-zinc-800 dark:text-gray-200 rounded-lg p-0.5">
+                {count}
+              </span>
+            )}
+          </button>
+        </ContextMenuTrigger>
+        <ContextMenuContent className="min-w-40">
+          <ContextMenuItem
+            onClick={() => onRename?.()}
+            className="cursor-pointer"
+          >
+            <Pencil className="size-4" />
+            重命名列表
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem
+            onClick={handleDeleteClick}
+            variant="destructive"
+            className="cursor-pointer"
+          >
+            <Trash2 className="size-4" />
+            删除列表
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除列表</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除 "{item.name}" 吗？此操作无法撤销，列表中的所有任务也将被删除。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

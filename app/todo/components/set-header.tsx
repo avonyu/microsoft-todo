@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement } from "react";
+import { cloneElement, useState, useEffect } from "react";
 import {
   Ellipsis,
   ArrowUpDown,
@@ -10,6 +10,7 @@ import {
   CalendarPlus,
   CalendarDays,
   Palette,
+  SmilePlus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,6 +34,27 @@ import { cn } from "@/lib/utils";
 import config from "@/app/todo/config.json"
 
 const BG_CONFIG = config.bg_config
+const EMOJI_LIST = config.emoji_list;
+
+export function EmojiPicker({
+  onSelect,
+}: {
+  onSelect: (emoji: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-6 gap-1 p-2">
+      {EMOJI_LIST.map((e) => (
+        <div
+          key={e}
+          onClick={() => onSelect(e)}
+          className="cursor-pointer p-1 text-lg hover:bg-gray-100 dark:hover:bg-zinc-700 rounded"
+        >
+          {e}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 interface SetHeaderProps {
   setId: string;
@@ -71,6 +93,8 @@ function MyDayHeader({ label }: { label: string }) {
 /**
  * Header component for standard sets with icon
  */
+const DEFAULT_SET_IDS = ["myday", "important", "planned", "assigned_to_me", "flagged", "inbox"];
+
 function StandardSetHeader({
   label,
   icon,
@@ -80,8 +104,25 @@ function StandardSetHeader({
   icon?: React.ReactNode;
   setId: string;
 }) {
-  const { actions, selectors } = useTodo();
+  const { actions, selectors, state } = useTodo();
   const tasks = selectors.getTasksBySetId(setId);
+  const isCustomSet = !DEFAULT_SET_IDS.includes(setId);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(label);
+  const [currentEmoji, setCurrentEmoji] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Get current set data for custom sets
+  useEffect(() => {
+    if (isCustomSet) {
+      const todoSet = state.sets.find((s) => s.id === setId);
+      if (todoSet) {
+        setCurrentEmoji(todoSet.emoji || "");
+        setEditName(todoSet.name || label);
+      }
+    }
+  }, [isCustomSet, setId, state.sets, label]);
 
   const handleDelete = async (taskId: string) => {
     const res = await deleteTodoTask(taskId);
@@ -111,10 +152,77 @@ function StandardSetHeader({
     actions.setSetBgImage(setId, bgValue);
   };
 
+  const handleTitleClick = () => {
+    if (isCustomSet && !isEditing) {
+      setIsEditing(true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    const trimmedName = editName.trim();
+    if (trimmedName) {
+      await actions.updateTodoSetOptimistic(setId, { name: trimmedName, emoji: currentEmoji });
+    }
+    setIsEditing(false);
+  };
+
+  const handleEmojiSelect = async (emoji: string) => {
+    setCurrentEmoji(emoji);
+    await actions.updateTodoSetOptimistic(setId, { name: editName.trim() || label, emoji });
+    setShowEmojiPicker(false);
+  };
+
   return (
     <div className="flex items-center justify-between py-6">
       <div className="flex items-center">
-        {icon &&
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            {showEmojiPicker && (
+              <div className="absolute top-16 z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border">
+                <EmojiPicker onSelect={handleEmojiSelect} />
+              </div>
+            )}
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              onBlur={handleSaveEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveEdit();
+                if (e.key === "Escape") {
+                  setEditName(label);
+                  setIsEditing(false);
+                }
+              }}
+              className="bg-transparent border-b-2 border-white text-white text-3xl font-semibold ml-2 focus:outline-none"
+              autoFocus
+            />
+          </div>
+        ) : (
+          <>
+            {currentEmoji && <span className="text-3xl">{currentEmoji}</span>}
+            <h1
+              className={`text-white text-3xl p-1 font-semibold ml-2 ${isCustomSet ? "cursor-pointer hover:bg-white/20 rounded-sm" : ""}`}
+              onClick={handleTitleClick}
+            >
+              {label}
+            </h1>
+            {isCustomSet && (
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="ml-2 p-1 text-white hover:bg-white/20 rounded-md"
+              >
+                <SmilePlus className="h-5 w-5" />
+              </button>
+            )}
+            {showEmojiPicker && isCustomSet && !isEditing && (
+              <div className="absolute top-16 z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border">
+                <EmojiPicker onSelect={handleEmojiSelect} />
+              </div>
+            )}
+          </>
+        )}
+        {icon && !isEditing && !isCustomSet &&
           cloneElement(
             icon as React.ReactElement<{ size?: number; className?: string }>,
             {
@@ -122,7 +230,6 @@ function StandardSetHeader({
               className: "text-white",
             },
           )}
-        <h1 className="text-white text-3xl font-semibold ml-2">{label}</h1>
       </div>
 
       <DropdownMenu>
