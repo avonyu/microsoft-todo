@@ -1,0 +1,70 @@
+{
+  "defaultTodoSet": [
+    {
+      "id": "myday",
+      "label": "我的一天",
+      "icon": "Sun",
+      "bgImg": "/todo-wallpapers/bg-1.png",
+      "card": {
+        "img": "/todo-set-imgs/today.png",
+        "title": "专注于你的一天",
+        "content": "使用“我的一天”完成任务，这是一个每天都会刷新的列表"
+      }
+    },
+    {
+      "id": "important",
+      "label": "重要",
+      "icon": "Star",
+      "bgImg": "/todo-wallpapers/bg-2.png",
+      "card": {
+        "img": "/todo-set-imgs/important.png",
+        "title": null,
+        "content": "长输出为一些任务加星标，以便在此处查看它们"
+      }
+    },
+    {
+      "id": "planned",
+      "label": "计划内",
+      "icon": "SquareKanban",
+      "bgImg": "/todo-wallpapers/bg-3.png",
+      "card": {
+        "img": "/todo-set-imgs/planned.png",
+        "title": null,
+        "content": "此处显示带有截止日期或提醒的任务"
+      }
+    },
+    {
+      "id": "assigned_to_me",
+      "label": "已分配给我",
+      "icon": "User",
+      "bgImg": "/todo-wallpapers/bg-4.png",
+      "card": {
+        "img": "/todo-set-imgs/assigned.png",
+        "title": null,
+        "content": "分配给你的任务显示在此处"
+      }
+    },
+    {
+      "id": "flagged",
+      "label": "标记的电子邮件",
+      "icon": "Flag",
+      "bgImg": "/todo-wallpapers/bg-5.png",
+      "card": {
+        "img": "/todo-set-imgs/flagged.png",
+        "title": null,
+        "content": "标记的邮件在此处显示为任务"
+      }
+    },
+    {
+      "id": "inbox",
+      "label": "任务",
+      "icon": "Home",
+      "bgImg": "/todo-wallpapers/bg-6.png",
+      "card": {
+        "img": "/todo-set-imgs/flagged.png",
+        "title": null,
+        "content": "查看所有任务，待修改。"
+      }
+    }
+  ]
+}
