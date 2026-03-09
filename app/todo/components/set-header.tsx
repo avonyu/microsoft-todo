@@ -37,29 +37,9 @@ import {
 } from "@/lib/actions/todo/todo-actions";
 import { cn } from "@/lib/utils";
 import config from "@/app/todo/config.json";
+import { EmojiPicker } from "./emoji-picker";
 
 const BG_CONFIG = config.bg_config;
-const EMOJI_LIST = (config as unknown as { emoji_list: string[] }).emoji_list;
-
-export function EmojiPicker({
-  onSelect,
-}: {
-  onSelect: (emoji: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-6 gap-1 p-2">
-      {EMOJI_LIST.map((e: string) => (
-        <div
-          key={e}
-          onClick={() => onSelect(e)}
-          className="cursor-pointer p-1 text-lg hover:bg-gray-100 dark:hover:bg-zinc-700 rounded"
-        >
-          {e}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 interface SetHeaderProps {
   setId: string;
@@ -169,6 +149,7 @@ function StandardSetHeader({
   return (
     <div className="flex items-center justify-between py-6">
       <div className="flex items-center">
+        {/* 默认列表图标 */}
         {icon &&
           !isEditing &&
           !isCustomSet &&
@@ -179,12 +160,17 @@ function StandardSetHeader({
               className: "text-white",
             },
           )}
+
         {isEditing ? (
           <div className="flex items-center gap-2">
             <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
               <PopoverTrigger asChild>
                 <button className="p-1 text-white hover:bg-white/20 rounded-md">
-                  <SmilePlus className="h-5 w-5" />
+                  {currentEmoji ? (
+                    <span className="text-3xl">{currentEmoji}</span>
+                  ) : (
+                    <SmilePlus className="h-5 w-5" />
+                  )}
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">

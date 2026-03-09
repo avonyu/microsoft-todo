@@ -13,6 +13,9 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
 } from "@/components/ui/context-menu";
 import {
   AlertDialog,
@@ -24,7 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, TextAlignJustify } from "lucide-react";
+import { Pencil, Trash2, TextAlignJustify, Smile } from "lucide-react";
+import { EmojiPicker } from "./emoji-picker";
 
 export function TodoSet({ item }: { item: DefaultSet }) {
   const router = useRouter();
@@ -83,6 +87,7 @@ export function TodoCustomSet({
   const [editName, setEditName] = useState(item.name);
   const [emoji, setEmoji] = useState(item.emoji || "");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -127,6 +132,11 @@ export function TodoCustomSet({
     if (success && onDelete) {
       onDelete(item.id);
     }
+  };
+
+  const handleEmojiSelect = async (selectedEmoji: string) => {
+    await actions.updateTodoSetOptimistic(item.id, { emoji: selectedEmoji });
+    setShowEmojiPicker(false);
   };
 
   if (isEditing) {
@@ -193,6 +203,15 @@ export function TodoCustomSet({
             <Pencil className="size-4" />
             重命名列表
           </ContextMenuItem>
+          <ContextMenuSub>
+            <ContextMenuSubTrigger className="cursor-pointer">
+              <Smile className="size-4 mr-2" />
+              设定图标
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="p-0">
+              <EmojiPicker onSelect={handleEmojiSelect} />
+            </ContextMenuSubContent>
+          </ContextMenuSub>
           <ContextMenuSeparator />
           <ContextMenuItem
             onClick={handleDeleteClick}
