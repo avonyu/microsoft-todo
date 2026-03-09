@@ -24,6 +24,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { useTodo } from "@/contexts/todo-context";
 import {
@@ -31,9 +36,9 @@ import {
   changeTodoTask,
 } from "@/lib/actions/todo/todo-actions";
 import { cn } from "@/lib/utils";
-import config from "@/app/todo/config.json"
+import config from "@/app/todo/config.json";
 
-const BG_CONFIG = config.bg_config
+const BG_CONFIG = config.bg_config;
 const EMOJI_LIST = (config as unknown as { emoji_list: string[] }).emoji_list;
 
 export function EmojiPicker({
@@ -93,7 +98,14 @@ function MyDayHeader({ label }: { label: string }) {
 /**
  * Header component for standard sets with icon
  */
-const DEFAULT_SET_IDS = ["myday", "important", "planned", "assigned_to_me", "flagged", "inbox"];
+const DEFAULT_SET_IDS = [
+  "myday",
+  "important",
+  "planned",
+  "assigned_to_me",
+  "flagged",
+  "inbox",
+];
 
 function StandardSetHeader({
   label,
@@ -124,36 +136,12 @@ function StandardSetHeader({
     }
   }, [isCustomSet, setId, state.sets, label]);
 
-  const handleDelete = async (taskId: string) => {
-    const res = await deleteTodoTask(taskId);
-    if (res.success) {
-      actions.deleteTask(taskId);
-    }
-  };
-
-  const handleToggleImportant = async (
-    taskId: string,
-    isImportant: boolean,
-  ) => {
-    const res = await changeTodoTask(taskId, { isImportant });
-    if (res.success && res.data) {
-      actions.updateTask(res.data);
-    }
-  };
-
-  const handleAddToMyDay = async (taskId: string) => {
-    const res = await changeTodoTask(taskId, { isToday: true });
-    if (res.success && res.data) {
-      actions.updateTask(res.data);
-    }
-  };
-
   const handleSetBackground = (bgValue: string) => {
     actions.setSetBgImage(setId, bgValue);
   };
 
   const handleTitleClick = () => {
-    if (isCustomSet && !isEditing) {
+    if (isCustomSet && setId && !isEditing) {
       setIsEditing(true);
     }
   };
@@ -161,27 +149,48 @@ function StandardSetHeader({
   const handleSaveEdit = async () => {
     const trimmedName = editName.trim();
     if (trimmedName) {
-      await actions.updateTodoSetOptimistic(setId, { name: trimmedName, emoji: currentEmoji });
+      await actions.updateTodoSetOptimistic(setId, {
+        name: trimmedName,
+        emoji: currentEmoji,
+      });
     }
     setIsEditing(false);
   };
 
   const handleEmojiSelect = async (emoji: string) => {
     setCurrentEmoji(emoji);
-    await actions.updateTodoSetOptimistic(setId, { name: editName.trim() || label, emoji });
+    await actions.updateTodoSetOptimistic(setId, {
+      name: editName.trim() || label,
+      emoji,
+    });
     setShowEmojiPicker(false);
   };
 
   return (
     <div className="flex items-center justify-between py-6">
       <div className="flex items-center">
+        {icon &&
+          !isEditing &&
+          !isCustomSet &&
+          cloneElement(
+            icon as React.ReactElement<{ size?: number; className?: string }>,
+            {
+              size: 24,
+              className: "text-white",
+            },
+          )}
         {isEditing ? (
           <div className="flex items-center gap-2">
-            {showEmojiPicker && (
-              <div className="absolute top-16 z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border">
+            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+              <PopoverTrigger asChild>
+                <button className="p-1 text-white hover:bg-white/20 rounded-md">
+                  <SmilePlus className="h-5 w-5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
                 <EmojiPicker onSelect={handleEmojiSelect} />
-              </div>
-            )}
+              </PopoverContent>
+            </Popover>
             <input
               type="text"
               value={editName}
@@ -207,29 +216,8 @@ function StandardSetHeader({
             >
               {label}
             </h1>
-            {isCustomSet && (
-              <button
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="ml-2 p-1 text-white hover:bg-white/20 rounded-md"
-              >
-                <SmilePlus className="h-5 w-5" />
-              </button>
-            )}
-            {showEmojiPicker && isCustomSet && !isEditing && (
-              <div className="absolute top-16 z-50 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border">
-                <EmojiPicker onSelect={handleEmojiSelect} />
-              </div>
-            )}
           </>
         )}
-        {icon && !isEditing && !isCustomSet &&
-          cloneElement(
-            icon as React.ReactElement<{ size?: number; className?: string }>,
-            {
-              size: 24,
-              className: "text-white",
-            },
-          )}
       </div>
 
       <DropdownMenu>
@@ -269,7 +257,9 @@ function StandardSetHeader({
           </DropdownMenuSub>
           <DropdownMenuSub>
             <div>
-              <div className="text-gray-200 text-sm px-2">主题</div>
+              <div className="text-gray-700 dark:text-gray-200 text-sm px-2">
+                主题
+              </div>
               <div className="p-2">
                 <div className="grid grid-cols-5 gap-2">
                   {BG_CONFIG.map((bg) => (
@@ -278,11 +268,13 @@ function StandardSetHeader({
                       onClick={() => handleSetBackground(bg.value)}
                       className={cn(
                         "size-8 cursor-pointer hover:ring-1 hover:ring-gray-500",
-                        bg.type === "color" ? "" : "bg-cover bg-center"
+                        bg.type === "color" ? "" : "bg-cover bg-center",
                       )}
                       style={{
-                        backgroundColor: bg.type === "color" ? bg.value : undefined,
-                        backgroundImage: bg.type === "image" ? `url(${bg.value})` : undefined,
+                        backgroundColor:
+                          bg.type === "color" ? bg.value : undefined,
+                        backgroundImage:
+                          bg.type === "image" ? `url(${bg.value})` : undefined,
                       }}
                     />
                   ))}
