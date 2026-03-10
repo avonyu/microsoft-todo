@@ -18,8 +18,8 @@ export function EmojiPicker({
       <div
         className={cn(
           "grid grid-cols-6 gap-1 p-2 max-h-52 overflow-y-auto",
-          "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full",
-          "dark:scrollbar-thumb-zinc-600",
+          "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full",
+          "dark:[&::-webkit-scrollbar-thumb]:bg-zinc-600",
         )}
       >
         {EMOJI_LIST.map((e: string) => (

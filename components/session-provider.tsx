@@ -14,12 +14,13 @@ export default function SessionProvider({
 
   useEffect(() => {
     // 只有当 session 加载完成且不处于 pending 状态时才更新 store
-    // 注意：如果是未登录，session 为 null/undefined，我们也应该更新 store 以反映“未登录”状态
+    // 注意：如果是未登录，session 为 null/undefined，我们也应该更新 store 以反映”未登录”状态
     if (!isPending) {
       // 假设 store 的 user 类型允许 null，如果不允许需做转换
+      // Add setPreferences field for database sync
       setUser(
         session?.user
-          ? { ...session.user, image: session.user.image ?? null }
+          ? { ...session.user, image: session.user.image ?? null, setPreferences: null }
           : undefined,
       );
     }

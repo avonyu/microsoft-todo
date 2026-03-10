@@ -4,6 +4,8 @@ import { devtools } from 'zustand/middleware'
 import type { TodoTask, TodoSet, User } from '@/generated/prisma/client'
 import { getAllTodoTasks } from '@/lib/actions/todo/todo-actions'
 import { getAllTodoSets } from '@/lib/actions/todo/todoset-actions'
+import { getUserPreferences } from '@/lib/actions/user/user-preferences'
+import { updateSetBgImage } from '@/lib/actions/user/user-preferences'
 import { defaultTodoSet, type DefaultSet } from '@/app/todo/lib/default-sets'
 
 // 定义显示用的类型，解决 icon 类型不兼容问题
@@ -67,9 +69,10 @@ export const useTodoAppStore = create<TodoAppStore>()(
         fetchInitialData: async (userId: string) => {
           set({ isLoading: true, error: null }, false, 'fetchInitialData/start')
           try {
-            const [tasksRes, setsRes] = await Promise.all([
+            const [tasksRes, setsRes, preferencesRes] = await Promise.all([
               getAllTodoTasks(userId),
-              getAllTodoSets(userId)
+              getAllTodoSets(userId),
+              getUserPreferences(userId)
             ])
 
             const newTasks = tasksRes.success && tasksRes.data ? tasksRes.data : []
@@ -82,6 +85,13 @@ export const useTodoAppStore = create<TodoAppStore>()(
                 bgImages[set.id] = set.bgImg
               }
             })
+
+            // Merge setBgImages from user preferences (database) - these take priority
+            if (preferencesRes.success && preferencesRes.data?.setBgImages) {
+              Object.entries(preferencesRes.data.setBgImages).forEach(([setId, bgImg]) => {
+                bgImages[setId] = bgImg
+              })
+            }
 
             set({
               tasks: newTasks,
@@ -132,9 +142,18 @@ export const useTodoAppStore = create<TodoAppStore>()(
         ),
 
         clearError: () => set({ error: null }, false, 'clearError'),
-        setSetBgImage: (setId, bgImg) => set((state) => ({
-          setBgImages: { ...state.setBgImages, [setId]: bgImg }
-        }), false, 'setSetBgImage'),
+        setSetBgImage: async (setId, bgImg) => {
+          // First update local state
+          set((state) => ({
+            setBgImages: { ...state.setBgImages, [setId]: bgImg }
+          }), false, 'setSetBgImage')
+
+          // Then sync to database if user is logged in
+          const userId = useTodoAppStore.getState().user?.id
+          if (userId) {
+            await updateSetBgImage(userId, setId, bgImg)
+          }
+        },
       }),
       {
         name: 'todo-app-storage',

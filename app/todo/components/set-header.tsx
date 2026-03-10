@@ -116,11 +116,11 @@ function StandardSetHeader({
         {isCustomSet && (
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
-              <button className="text-white hover:bg-white/20 rounded-md">
+              <button className="text-white hover:bg-white/20 rounded-xs">
                 {currentEmoji ? (
                   <span className="text-3xl cursor-pointer">{currentEmoji}</span>
                 ) : (
-                  <SmilePlus className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
+                  <SmilePlus className="size-8 p-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
                 )}
               </button>
             </PopoverTrigger>

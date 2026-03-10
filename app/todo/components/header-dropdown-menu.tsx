@@ -39,10 +39,11 @@ export function HeaderDropdownMenu({ setId }: HeaderDropdownMenuProps) {
   const { actions } = useTodo();
 
   const handleSetBackground = async (bgId: string, bgValue: string) => {
-    // Store bgId in local state (will be persisted to localStorage)
-    actions.setSetBgImage(setId, bgId);
+    // Store bgId in local state and sync to database
+    // Both default sets and custom sets will now save to database
+    await actions.setSetBgImage(setId, bgId);
 
-    // Only sync to database for custom sets (not default sets)
+    // Also update custom sets in the TodoSet table for backward compatibility
     if (!DEFAULT_SET_IDS.includes(setId)) {
       await actions.updateTodoSetOptimistic(setId, { bgImg: bgId });
     }
