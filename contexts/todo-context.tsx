@@ -15,7 +15,7 @@ import {
   useGetCountBySetId,
 } from "@/store/todo-app";
 import type { User, TodoTask, TodoSet } from "@/generated/prisma/client";
-import { defaultTodoSet, type DefaultSet } from "@/app/todo/config";
+import { defaultTodoSet, type DefaultSet } from "@/app/todo/lib/default-sets";
 import {
   changeTodoTask,
   deleteTodoTask,

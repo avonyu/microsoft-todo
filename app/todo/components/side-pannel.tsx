@@ -41,7 +41,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useGetUser, useGetSets, useTodoAppStore } from "@/store/todo-app";
-import { defaultTodoSet } from "../config";
+import { defaultTodoSet } from "../lib/default-sets";
 import { cn } from "@/lib/utils";
 import { TodoSet, TodoCustomSet } from "./sets";
 import { useTodo } from "@/contexts/todo-context";

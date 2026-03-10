@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { type DefaultSet } from "../config";
+import { type DefaultSet } from "../lib/default-sets";
 
 export default function SetCard({ todoSet }: { todoSet: DefaultSet }) {
   return (

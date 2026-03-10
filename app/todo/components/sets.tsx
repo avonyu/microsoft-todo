@@ -1,6 +1,6 @@
 "use client";
 
-import { type DefaultSet } from "../config";
+import { type DefaultSet } from "../lib/default-sets";
 import { useGetCountBySetId } from "@/store/todo-app";
 import { cloneElement, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -139,6 +139,12 @@ export function TodoCustomSet({
     setShowEmojiPicker(false);
   };
 
+  const handleEmojiDelete = async () => {
+    await actions.updateTodoSetOptimistic(item.id, { emoji: "" });
+    setEmoji("");
+    setShowEmojiPicker(false);
+  };
+
   if (isEditing) {
     return (
       <div className="flex items-center gap-1">
@@ -209,7 +215,7 @@ export function TodoCustomSet({
               设定图标
             </ContextMenuSubTrigger>
             <ContextMenuSubContent className="p-0">
-              <EmojiPicker onSelect={handleEmojiSelect} />
+              <EmojiPicker onSelect={handleEmojiSelect} onDelete={handleEmojiDelete} showDelete={!!emoji} />
             </ContextMenuSubContent>
           </ContextMenuSub>
           <ContextMenuSeparator />

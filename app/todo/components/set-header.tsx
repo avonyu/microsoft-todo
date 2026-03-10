@@ -1,45 +1,15 @@
 "use client";
 
 import { cloneElement, useState, useEffect } from "react";
-import {
-  Ellipsis,
-  ArrowUpDown,
-  Star,
-  Calendar,
-  Sun,
-  CalendarPlus,
-  CalendarDays,
-  Palette,
-  SmilePlus,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuLabel,
-  DropdownMenuGroup,
-} from "@/components/ui/dropdown-menu";
+import { SmilePlus } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import { useTodo } from "@/contexts/todo-context";
-import {
-  deleteTodoTask,
-  changeTodoTask,
-} from "@/lib/actions/todo/todo-actions";
-import { cn } from "@/lib/utils";
-import config from "@/app/todo/config.json";
 import { EmojiPicker } from "./emoji-picker";
-
-const BG_CONFIG = config.bg_config;
+import { HeaderDropdownMenu } from "./header-dropdown-menu";
 
 interface SetHeaderProps {
   setId: string;
@@ -50,7 +20,7 @@ interface SetHeaderProps {
 /**
  * Header component for "My Day" set with date display
  */
-function MyDayHeader({ label }: { label: string }) {
+function MyDayHeader({ label, setId }: { label: string; setId: string }) {
   const getData = () => {
     const date = new Date();
     const month = date.getMonth() + 1;
@@ -68,9 +38,12 @@ function MyDayHeader({ label }: { label: string }) {
   };
 
   return (
-    <div className="py-6">
-      <h1 className="text-white text-3xl font-semibold ml-2">{label}</h1>
-      <p className="text-white text-sm font-medium ml-2">{getData()}</p>
+    <div className="flex items-center justify-between py-6">
+      <div>
+        <h1 className="text-white text-3xl font-semibold ml-2">{label}</h1>
+        <p className="text-white text-sm font-medium ml-2">{getData()}</p>
+      </div>
+      <HeaderDropdownMenu setId={setId} />
     </div>
   );
 }
@@ -96,180 +69,73 @@ function StandardSetHeader({
   icon?: React.ReactNode;
   setId: string;
 }) {
-  const { actions, selectors, state } = useTodo();
-  const tasks = selectors.getTasksBySetId(setId);
+  const { actions, state } = useTodo();
   const isCustomSet = !DEFAULT_SET_IDS.includes(setId);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(label);
   const [currentEmoji, setCurrentEmoji] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Get current set data for custom sets
   useEffect(() => {
     if (isCustomSet) {
       const todoSet = state.sets.find((s) => s.id === setId);
       if (todoSet) {
         setCurrentEmoji(todoSet.emoji || "");
-        setEditName(todoSet.name || label);
       }
     }
-  }, [isCustomSet, setId, state.sets, label]);
-
-  const handleSetBackground = (bgValue: string) => {
-    actions.setSetBgImage(setId, bgValue);
-  };
-
-  const handleTitleClick = () => {
-    if (isCustomSet && setId && !isEditing) {
-      setIsEditing(true);
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    const trimmedName = editName.trim();
-    if (trimmedName) {
-      await actions.updateTodoSetOptimistic(setId, {
-        name: trimmedName,
-        emoji: currentEmoji,
-      });
-    }
-    setIsEditing(false);
-  };
+  }, [isCustomSet, setId, state.sets]);
 
   const handleEmojiSelect = async (emoji: string) => {
     setCurrentEmoji(emoji);
     await actions.updateTodoSetOptimistic(setId, {
-      name: editName.trim() || label,
+      name: label,
       emoji,
+    });
+    setShowEmojiPicker(false);
+  };
+
+  const handleEmojiDelete = async () => {
+    setCurrentEmoji("");
+    await actions.updateTodoSetOptimistic(setId, {
+      name: label,
+      emoji: "",
     });
     setShowEmojiPicker(false);
   };
 
   return (
     <div className="flex items-center justify-between py-6">
-      <div className="flex items-center">
-        {/* 默认列表图标 */}
-        {icon &&
-          !isEditing &&
-          !isCustomSet &&
-          cloneElement(
-            icon as React.ReactElement<{ size?: number; className?: string }>,
-            {
-              size: 24,
-              className: "text-white",
-            },
-          )}
-
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-              <PopoverTrigger asChild>
-                <button className="p-1 text-white hover:bg-white/20 rounded-md">
-                  {currentEmoji ? (
-                    <span className="text-3xl">{currentEmoji}</span>
-                  ) : (
-                    <SmilePlus className="h-5 w-5" />
-                  )}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <EmojiPicker onSelect={handleEmojiSelect} />
-              </PopoverContent>
-            </Popover>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={handleSaveEdit}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSaveEdit();
-                if (e.key === "Escape") {
-                  setEditName(label);
-                  setIsEditing(false);
-                }
-              }}
-              className="bg-transparent border-b-2 border-white text-white text-3xl font-semibold ml-2 focus:outline-none"
-              autoFocus
-            />
-          </div>
-        ) : (
-          <>
-            {currentEmoji && <span className="text-3xl">{currentEmoji}</span>}
-            <h1
-              className={`text-white text-3xl p-1 font-semibold ml-2 ${isCustomSet ? "cursor-pointer hover:bg-white/20 rounded-sm" : ""}`}
-              onClick={handleTitleClick}
-            >
-              {label}
-            </h1>
-          </>
+      <div className="flex items-center group">
+        {icon && !isCustomSet && cloneElement(
+          icon as React.ReactElement<{ size?: number; className?: string }>,
+          {
+            size: 24,
+            className: "text-white",
+          },
         )}
+
+        {isCustomSet && (
+          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+            <PopoverTrigger asChild>
+              <button className="text-white hover:bg-white/20 rounded-md">
+                {currentEmoji ? (
+                  <span className="text-3xl cursor-pointer">{currentEmoji}</span>
+                ) : (
+                  <SmilePlus className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" />
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <EmojiPicker onSelect={handleEmojiSelect} onDelete={handleEmojiDelete} showDelete={!!currentEmoji} />
+            </PopoverContent>
+          </Popover>
+        )}
+
+        <h1 className="text-white text-3xl p-1 font-semibold ml-2">
+          {label}
+        </h1>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div className="flex items-center justify-center text-white hover:bg-white/20 hover:dark:bg-black/20 rounded-md size-8">
-            <Ellipsis className="h-5 w-5" />
-          </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="flex items-center gap-2 cursor-pointer">
-              <ArrowUpDown className="h-4 w-4" />
-              <span>排序依据</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Star className="h-4 w-4" />
-                <span>重要性</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <CalendarDays className="h-4 w-4" />
-                <span>到期日期</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Sun className="h-4 w-4" />
-                <span>已添加到"我的一天"</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <ArrowUpDown className="h-4 w-4" />
-                <span>字母顺序</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <CalendarPlus className="h-4 w-4" />
-                <span>创建日期</span>
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuSub>
-            <div>
-              <div className="text-gray-700 dark:text-gray-200 text-sm px-2">
-                主题
-              </div>
-              <div className="p-2">
-                <div className="grid grid-cols-5 gap-2">
-                  {BG_CONFIG.map((bg) => (
-                    <div
-                      key={bg.id}
-                      onClick={() => handleSetBackground(bg.value)}
-                      className={cn(
-                        "size-8 cursor-pointer hover:ring-1 hover:ring-gray-500",
-                        bg.type === "color" ? "" : "bg-cover bg-center",
-                      )}
-                      style={{
-                        backgroundColor:
-                          bg.type === "color" ? bg.value : undefined,
-                        backgroundImage:
-                          bg.type === "image" ? `url(${bg.value})` : undefined,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </DropdownMenuSub>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <HeaderDropdownMenu setId={setId} />
     </div>
   );
 }
@@ -280,7 +146,7 @@ function StandardSetHeader({
  */
 export function SetHeader({ setId, label, icon }: SetHeaderProps) {
   if (setId === "myday") {
-    return <MyDayHeader label={label} />;
+    return <MyDayHeader label={label} setId={setId} />;
   }
   return <StandardSetHeader label={label} icon={icon} setId={setId} />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { Plus, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,11 +9,18 @@ import { createTodoTask } from "@/lib/actions/todo/todo-actions";
 import reorder from "@/lib/utils/reorder";
 import { useTodo } from "@/contexts/todo-context";
 import SetCard from "./set-card";
-import { defaultTodoSet, type DefaultSet } from "../config";
+import { defaultTodoSet, type DefaultSet } from "../lib/default-sets";
 import { SetHeader } from "./set-header";
+import config from "@/app/todo/lib/config.json";
 
 // Default background for custom sets
 const DEFAULT_BG = "/todo-wallpapers/bg-6.png";
+
+// Build a map from bg id to bg value for quick lookup
+const BG_ID_TO_VALUE = config.bg_config.reduce((acc, bg) => {
+  acc[bg.id] = bg.value;
+  return acc;
+}, {} as Record<string, string>);
 
 // Check if setId is a default system set
 function isDefaultSet(setId: string): boolean {
@@ -32,7 +39,11 @@ function MainArea() {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Get background image - use setBgImages[setId] if set, otherwise use set's bgImg or default
-  const bgValue = state.setBgImages?.[setId] || currentSet.bgImg || DEFAULT_BG;
+  // bgValue could be either bg.id (e.g., "#788cde" or "bg-1") or a direct value
+  const rawBgValue = state.setBgImages?.[setId] || currentSet.bgImg || DEFAULT_BG;
+
+  // Convert bg id to actual value if needed
+  const bgValue = BG_ID_TO_VALUE[rawBgValue] || rawBgValue;
 
   // Determine if background is a color or image
   const isColorBackground = bgValue.startsWith("#");

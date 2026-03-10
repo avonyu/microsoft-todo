@@ -4,18 +4,18 @@
       "id": "myday",
       "label": "我的一天",
       "icon": "Sun",
-      "bgImg": "/todo-wallpapers/bg-1.png",
+      "bgImg": "bg-1",
       "card": {
         "img": "/todo-set-imgs/today.png",
         "title": "专注于你的一天",
-        "content": "使用“我的一天”完成任务，这是一个每天都会刷新的列表"
+        "content": "使用\"我的一天\"完成任务，这是一个每天都会刷新的列表"
       }
     },
     {
       "id": "important",
       "label": "重要",
       "icon": "Star",
-      "bgImg": "/todo-wallpapers/bg-2.png",
+      "bgImg": "bg-2",
       "card": {
         "img": "/todo-set-imgs/important.png",
         "title": null,
@@ -26,7 +26,7 @@
       "id": "planned",
       "label": "计划内",
       "icon": "SquareKanban",
-      "bgImg": "/todo-wallpapers/bg-3.png",
+      "bgImg": "bg-3",
       "card": {
         "img": "/todo-set-imgs/planned.png",
         "title": null,
@@ -37,7 +37,7 @@
       "id": "assigned_to_me",
       "label": "已分配给我",
       "icon": "User",
-      "bgImg": "/todo-wallpapers/bg-4.png",
+      "bgImg": "bg-4",
       "card": {
         "img": "/todo-set-imgs/assigned.png",
         "title": null,
@@ -48,7 +48,7 @@
       "id": "flagged",
       "label": "标记的电子邮件",
       "icon": "Flag",
-      "bgImg": "/todo-wallpapers/bg-5.png",
+      "bgImg": "bg-5",
       "card": {
         "img": "/todo-set-imgs/flagged.png",
         "title": null,
@@ -59,7 +59,7 @@
       "id": "inbox",
       "label": "任务",
       "icon": "Home",
-      "bgImg": "/todo-wallpapers/bg-6.png",
+      "bgImg": "bg-6",
       "card": {
         "img": "/todo-set-imgs/flagged.png",
         "title": null,
@@ -71,7 +71,18 @@
     "📌", "📝", "📋", "✅", "⭐", "🔥",
     "💡", "🎯", "🏠", "💼", "🛒", "🎨",
     "📚", "🏃", "💪", "🎮", "🎵", "🌟",
-    "❤️", "🎉", "🔔", "📅", "⏰", "🌞"
+    "❤️", "🎉", "🔔", "📅", "⏰", "🌞",
+    "🌙", "🌈", "☀️", "⛅", "🌤️", "🌊",
+    "✈️", "🚗", "🚲", "🚌", "🚇", "⛵",
+    "🍕", "🍔", "🍜", "🍣", "🍰", "☕",
+    "📱", "💻", "🖥️", "⌨️", "🖱️", "💾",
+    "📷", "🎬", "📺", "📻", "🎧", "✏️",
+    "🖊️", "📐", "📏", "📎", "🔧", "🔨",
+    "⚙️", "🔒", "🔑", "💰", "💳", "📊",
+    "📈", "📉", "💵", "🎁", "🎈", "🎀",
+    "🎊", "🏆", "🥇", "⚽", "🏀", "🎾",
+    "🏈", "⚾", "🏐", "🌱", "🌸", "🌺",
+    "🌻", "🌹", "🍀"
   ],
   "bg_config": [
     { "id": "#788cde", "type": "color", "value": "#788cde" },

@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware'
 import type { TodoTask, TodoSet, User } from '@/generated/prisma/client'
 import { getAllTodoTasks } from '@/lib/actions/todo/todo-actions'
 import { getAllTodoSets } from '@/lib/actions/todo/todoset-actions'
-import { defaultTodoSet, type DefaultSet } from '@/app/todo/config'
+import { defaultTodoSet, type DefaultSet } from '@/app/todo/lib/default-sets'
 
 // 定义显示用的类型，解决 icon 类型不兼容问题
 // 使用与 DefaultSet 相同的 icon 类型以保持兼容性
@@ -75,7 +75,20 @@ export const useTodoAppStore = create<TodoAppStore>()(
             const newTasks = tasksRes.success && tasksRes.data ? tasksRes.data : []
             const newSets = setsRes.success && setsRes.data ? setsRes.data : []
 
-            set({ tasks: newTasks, sets: newSets, isLoading: false }, false, 'fetchInitialData/success')
+            // Extract bgImg from sets and populate setBgImages for database sync
+            const bgImages: Record<string, string> = {}
+            newSets.forEach((set) => {
+              if (set.bgImg) {
+                bgImages[set.id] = set.bgImg
+              }
+            })
+
+            set({
+              tasks: newTasks,
+              sets: newSets,
+              setBgImages: bgImages,
+              isLoading: false
+            }, false, 'fetchInitialData/success')
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to fetch data'
             set({ error: errorMessage, isLoading: false }, false, 'fetchInitialData/error')
@@ -128,7 +141,8 @@ export const useTodoAppStore = create<TodoAppStore>()(
         partialize: (state) => ({
           user: state.user,
           tasks: state.tasks,
-          sets: state.sets
+          sets: state.sets,
+          setBgImages: state.setBgImages,
         }),
         storage: createJSONStorage(() => localStorage),
       }
