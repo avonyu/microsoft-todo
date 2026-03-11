@@ -11,6 +11,7 @@ import { useTodo } from "@/contexts/todo-context";
 import SetCard from "./set-card";
 import { defaultTodoSet, type DefaultSet } from "../lib/default-sets";
 import { SetHeader } from "./set-header";
+import { TaskDetailSidebar } from "./task-detail-sidebar";
 import config from "@/app/todo/lib/config.json";
 
 // Default background for custom sets
@@ -32,6 +33,7 @@ function MainArea() {
   const setId = params.setId as string;
 
   const { state, actions, selectors } = useTodo();
+  const { isTaskDetailOpen, selectedTaskId } = state;
   const currentSet = selectors.getTodoSetById(setId) || defaultTodoSet[0];
   const tasks = selectors.getTasksBySetId(setId);
 
@@ -81,23 +83,24 @@ function MainArea() {
   const showHintCard = orderedTasks.length === 0 && "card" in currentSet && currentSet.card;
 
   return (
-    <main
-      onMouseDown={(e) => {
-        if (isInputFocused && e.target !== inputRef.current) {
-          e.preventDefault();
-        }
-      }}
-      onClick={() => inputRef.current?.focus()}
-      className={cn(
-        "w-full rounded-tl-md overflow-hidden transition-all duration-300 ease-in-out",
-        !isColorBackground && "bg-cover bg-center",
-      )}
-      style={{
-        backgroundImage: bgImage ? `url(${bgImage})` : undefined,
-        backgroundColor: bgColor,
-      }}
-    >
-      <div className="flex flex-col px-12 h-full">
+    <div className="flex h-full w-full min-w-0">
+      <main
+        onMouseDown={(e) => {
+          if (isInputFocused && e.target !== inputRef.current) {
+            e.preventDefault();
+          }
+        }}
+        onClick={() => inputRef.current?.focus()}
+        className={cn(
+          "flex-1 min-w-0 rounded-tl-md overflow-hidden transition-all duration-300 ease-in-out",
+          !isColorBackground && "bg-cover bg-center",
+        )}
+        style={{
+          backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+          backgroundColor: bgColor,
+        }}
+      >
+        <div className="flex flex-col px-12 h-full">
         {/* Header */}
         <SetHeader
           setId={currentSet.id}
@@ -176,7 +179,16 @@ function MainArea() {
           )}
         </div>
       </div>
-    </main>
+      </main>
+
+      {/* Task Detail Sidebar */}
+      {isTaskDetailOpen && selectedTaskId && (
+        <TaskDetailSidebar
+          taskId={selectedTaskId}
+          onClose={actions.closeTaskDetail}
+        />
+      )}
+    </div>
   );
 }
 

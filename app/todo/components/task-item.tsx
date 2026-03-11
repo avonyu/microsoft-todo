@@ -76,7 +76,10 @@ function TaskItem({
               <input
                 type="checkbox"
                 checked={task.isFinish}
-                onChange={() => actions.toggleTaskFinish(task.id)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  actions.toggleTaskFinish(task.id);
+                }}
                 className={cn(
                   "appearance-none size-4 rounded-full border-2 border-gray-500",
                   "peer checked:bg-gray-500 checked:border-transparent checked:border-0",
@@ -93,7 +96,13 @@ function TaskItem({
                 )}
               />
             </div>
-            <div className="flex-1">
+            <div
+              className="flex-1 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                actions.openTaskDetail(task.id);
+              }}
+            >
               <div
                 className={cn(
                   "text-sm font-medium cursor-default",
@@ -148,7 +157,10 @@ function TaskItem({
               )}
             </div>
             <button
-              onClick={() => actions.toggleTaskImportant(task.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                actions.toggleTaskImportant(task.id);
+              }}
               className="bg-transparent border-none cursor-pointer text-gray-400 hover:text-gray-500"
             >
               <Star

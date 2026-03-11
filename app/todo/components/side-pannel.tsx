@@ -1,6 +1,6 @@
 "use client";
 
-import { cloneElement, useState } from "react";
+import { useState } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Resizable } from "re-resizable";

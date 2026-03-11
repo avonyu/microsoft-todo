@@ -43,7 +43,9 @@ function TodoLayoutContent({
     <div className="min-h-screen max-h-screen flex dark:bg-zinc-800 overflow-hidden">
       <SidePannel />
       <Suspense fallback={<Loading />}>
-        {children}
+        <div className="flex-1 flex min-w-0">
+          {children}
+        </div>
       </Suspense>
     </div>
   );

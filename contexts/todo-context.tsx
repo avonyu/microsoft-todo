@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useRef } from "react";
+import { createContext, useContext, ReactNode, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   useTodoAppStore,
@@ -34,6 +34,8 @@ interface TodoState {
   isLoading: boolean;
   error: string | null;
   setBgImages: Record<string, string>;
+  selectedTaskId: string | null;
+  isTaskDetailOpen: boolean;
 }
 
 interface TodoActions {
@@ -47,6 +49,8 @@ interface TodoActions {
   deleteSet: (setId: string) => void;
   clearError: () => void;
   setSetBgImage: (setId: string, bgImg: string) => void;
+  openTaskDetail: (taskId: string) => void;
+  closeTaskDetail: () => void;
   // Optimistic actions
   toggleTaskImportant: (taskId: string) => Promise<void>;
   toggleTaskFinish: (taskId: string) => Promise<void>;
@@ -85,6 +89,9 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const pendingOperations = useRef(new Set<string>());
 
   // Get state from Zustand store
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
+
   const state = useTodoAppStore(useShallow((s) => ({
     user: s.user,
     tasks: s.tasks,
@@ -92,6 +99,8 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     isLoading: s.isLoading,
     error: s.error,
     setBgImages: s.setBgImages,
+    selectedTaskId,
+    isTaskDetailOpen,
   })));
 
   // Get actions from Zustand store (use getState() for async operations)
@@ -392,8 +401,21 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Task detail sidebar actions
+  const openTaskDetail = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setIsTaskDetailOpen(true);
+  };
+
+  const closeTaskDetail = () => {
+    setIsTaskDetailOpen(false);
+    setSelectedTaskId(null);
+  };
+
   const actions: TodoActions = {
     ...storeActions,
+    openTaskDetail,
+    closeTaskDetail,
     toggleTaskImportant,
     toggleTaskFinish,
     toggleTaskToday,
