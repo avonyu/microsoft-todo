@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         id: randomUUID(),
         content,
         userId: session.user.id,
+        updatedAt: new Date(),
       }
     });
 

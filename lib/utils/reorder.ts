@@ -1,4 +1,4 @@
-import { type TodoTask } from "@/generated/prisma/client";
+import { type TodoTask } from "@/lib/types/prisma-types";
 
 /**
  * 对任务列表进行排序，优先级：isImportant (desc) -> updatedAt (desc)

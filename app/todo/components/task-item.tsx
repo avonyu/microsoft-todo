@@ -15,7 +15,7 @@ import {
   Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TodoTask } from "@/generated/prisma/client";
+import { TodoTask } from "@/lib/types/prisma-types";
 import { useTodo } from "@/contexts/todo-context";
 import {
   ContextMenu,
@@ -231,7 +231,7 @@ function TaskItem({
           <AlertDialogHeader>
             <AlertDialogTitle>删除任务</AlertDialogTitle>
             <AlertDialogDescription>
-              将永久删除"{task.content}"
+              将永久删除&quot;{task.content}&quot;
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

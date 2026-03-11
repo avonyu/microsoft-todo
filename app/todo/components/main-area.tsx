@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Plus, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { SetHeader } from "./set-header";
 import config from "@/app/todo/lib/config.json";
 
 // Default background for custom sets
-const DEFAULT_BG = "/todo-wallpapers/bg-6.png";
+const DEFAULT_BG = "#788cde";
 
 // Build a map from bg id to bg value for quick lookup
 const BG_ID_TO_VALUE = config.bg_config.reduce((acc, bg) => {

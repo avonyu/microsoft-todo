@@ -130,7 +130,7 @@ function StandardSetHeader({
           </Popover>
         )}
 
-        <h1 className="text-white text-3xl p-1 font-semibold ml-2">
+        <h1 className="text-white text-3xl p-1 font-semibold">
           {label}
         </h1>
       </div>

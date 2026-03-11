@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { ActionResponse } from '../types'
-import { type TodoTask, Prisma } from "@/generated/prisma/client"
+import { type TodoTask, type TodoTaskWhereInput } from "@/lib/types/prisma-types"
 
 export async function createTodoTask(userId: string | undefined, formData: FormData): Promise<ActionResponse<TodoTask>> {
   if (!userId) {
@@ -20,11 +20,13 @@ export async function createTodoTask(userId: string | undefined, formData: FormD
     const isToday = formData.get("isToday") === "true";
     const isImportant = formData.get("isImportant") === "true";
 
+    const now = new Date();
     const todoItem = await prisma.todoTask.create({
       data: {
         id: crypto.randomUUID(),
         userId: userId,
         content: content.trim(),
+        updatedAt: now,
         ...(setId && { setId }),
         ...(isToday && { isToday: true }),
         ...(isImportant && { isImportant: true }),
@@ -77,7 +79,7 @@ export async function getTodoTasksBySetId(userId: string | undefined, todoSetId?
   }
 
   try {
-    const where: Prisma.TodoTaskWhereInput = {
+    const where: TodoTaskWhereInput = {
       userId,
     };
 

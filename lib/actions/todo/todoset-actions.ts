@@ -1,7 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma";
-import { type TodoSet } from "@/generated/prisma/client";
+import { type TodoSet } from "@/lib/types/prisma-types";
 import { ActionResponse } from "../types";
 
 export async function createTodoSet(userId: string, name: string): Promise<ActionResponse<TodoSet>> {

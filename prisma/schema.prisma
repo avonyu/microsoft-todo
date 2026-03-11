@@ -4,42 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
-model User {
-  id             String         @id
-  name           String
-  email          String         @unique
-  emailVerified  Boolean        @default(false)
-  image          String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @default(now()) @updatedAt
-  setPreferences String?
-  accounts       Account[]
-  sessions       Session[]
-  sets           TodoSet[]
-  tasks          TodoTask[]
-  taskSteps      TodoTaskStep[]
-
-  @@map("user")
-}
-
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("session")
-}
-
-model Account {
+model account {
   id                    String    @id
   accountId             String
   providerId            String
@@ -52,65 +20,83 @@ model Account {
   scope                 String?
   password              String?
   createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("account")
+  updatedAt             DateTime
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-
-  @@map("verification")
-}
-
-model TodoTask {
-  id          String         @id
-  content     String
-  isFinish    Boolean        @default(false)
-  isImportant Boolean        @default(false)
-  isToday     Boolean        @default(false)
-  setId       String?
-  dueDate     DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  userId      String
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  set         TodoSet?       @relation(fields: [setId], references: [id], onDelete: Cascade)
-  substeps    TodoTaskStep[]
-
-  @@map("todoTask")
-}
-
-model TodoTaskStep {
+model session {
   id        String   @id
-  content   String
-  isFinish  Boolean  @default(false)
-  taskId    String
+  expiresAt DateTime
+  token     String   @unique
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task      TodoTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  @@map("todoTaskStep")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model TodoSet {
+model todoSet {
   id        String     @id
   name      String
   emoji     String?
   bgImg     String?
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
+  updatedAt DateTime   @default(now())
   userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks     TodoTask[]
+  user      user       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  todoTask  todoTask[]
+}
 
-  @@map("todoSet")
+model todoTask {
+  id           String         @id
+  content      String
+  isFinish     Boolean        @default(false)
+  isImportant  Boolean        @default(false)
+  isToday      Boolean        @default(false)
+  setId        String?
+  dueDate      DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  userId       String
+  todoSet      todoSet?       @relation(fields: [setId], references: [id], onDelete: Cascade)
+  user         user           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  todoTaskStep todoTaskStep[]
+}
+
+model todoTaskStep {
+  id        String   @id
+  content   String
+  isFinish  Boolean  @default(false)
+  taskId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  userId    String
+  todoTask  todoTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model user {
+  id             String         @id
+  name           String
+  email          String         @unique
+  emailVerified  Boolean        @default(false)
+  image          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now())
+  setPreferences Json?
+  account        account[]
+  session        session[]
+  todoSet        todoSet[]
+  todoTask       todoTask[]
+  todoTaskStep   todoTaskStep[]
+}
+
+model verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
 }

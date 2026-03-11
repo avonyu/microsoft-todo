@@ -14,7 +14,7 @@ import {
   useGetTodoSetById,
   useGetCountBySetId,
 } from "@/store/todo-app";
-import type { User, TodoTask, TodoSet } from "@/generated/prisma/client";
+import type { User, TodoTask, TodoSet } from "@/lib/types/prisma-types";
 import { defaultTodoSet, type DefaultSet } from "@/app/todo/lib/default-sets";
 import {
   changeTodoTask,
@@ -75,6 +75,7 @@ interface TodoSetDisplay extends Omit<DefaultSet, "icon" | "bgImg"> {
   label: string;
   icon: React.JSX.Element | null;
   bgImg: string;
+  emoji?: string | null;
 }
 
 const TodoContext = createContext<TodoContextValue | undefined>(undefined);
@@ -370,6 +371,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
         label: customSet.name,
         icon: null,
         bgImg: customSet.bgImg || "",
+        emoji: customSet.emoji,
       };
     }
     return defaultTodoSet[0];

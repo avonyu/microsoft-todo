@@ -2,10 +2,11 @@
 
 import prisma from "@/lib/prisma"
 import { ActionResponse } from "../types"
+import type { Prisma } from "@/generated/prisma/client"
 
 export interface UserPreferences {
   setBgImages?: Record<string, string>
-  [key: string]: unknown
+  [key: string]: string | Record<string, string> | Prisma.InputJsonValue | undefined
 }
 
 export async function getUserPreferences(
@@ -21,8 +22,8 @@ export async function getUserPreferences(
       return { success: true, message: "No preferences found", data: {} }
     }
 
-    const preferences = JSON.parse(user.setPreferences) as UserPreferences
-    return { success: true, message: "Preferences retrieved", data: preferences }
+    // PostgreSQL Json type returns the parsed object directly
+    return { success: true, message: "Preferences retrieved", data: user.setPreferences as UserPreferences }
   } catch (error) {
     console.error("Failed to get user preferences:", error)
     return {
@@ -38,16 +39,18 @@ export async function updateUserPreferences(
   preferences: UserPreferences
 ): Promise<ActionResponse<void>> {
   try {
+    // PostgreSQL Json type handles serialization automatically
     await prisma.user.update({
       where: { id: userId },
-      data: { setPreferences: JSON.stringify(preferences) },
+      data: { setPreferences: preferences },
     })
-    return { success: true }
+    return { success: true, message: "Preferences updated", data: null }
   } catch (error) {
     console.error("Failed to update user preferences:", error)
     return {
       success: false,
       message: "Failed to update preferences",
+      data: null,
     }
   }
 }
@@ -64,31 +67,31 @@ export async function updateSetBgImage(
       select: { setPreferences: true },
     })
 
-    let preferences: UserPreferences = {}
-    if (user?.setPreferences) {
-      preferences = JSON.parse(user.setPreferences)
+    // PostgreSQL Json type returns parsed object directly
+    const currentPrefs = (user?.setPreferences as UserPreferences) || {}
+
+    // Initialize setBgImages if not exists and update
+    const preferences: UserPreferences = {
+      ...currentPrefs,
+      setBgImages: {
+        ...(currentPrefs.setBgImages || {}),
+        [setId]: bgImg,
+      },
     }
 
-    // Initialize setBgImages if not exists
-    if (!preferences.setBgImages) {
-      preferences.setBgImages = {}
-    }
-
-    // Update the background image for the set
-    preferences.setBgImages[setId] = bgImg
-
-    // Save to database
+    // Save to database - Json type handles serialization automatically
     await prisma.user.update({
       where: { id: userId },
-      data: { setPreferences: JSON.stringify(preferences) },
+      data: { setPreferences: preferences },
     })
 
-    return { success: true }
+    return { success: true, message: "Background image updated", data: null }
   } catch (error) {
     console.error("Failed to update set background image:", error)
     return {
       success: false,
       message: "Failed to update background image",
+      data: null,
     }
   }
 }

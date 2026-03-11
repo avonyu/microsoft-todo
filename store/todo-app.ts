@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { devtools } from 'zustand/middleware'
-import type { TodoTask, TodoSet, User } from '@/generated/prisma/client'
+import type { TodoTask, TodoSet, User } from '@/lib/types/prisma-types'
 import { getAllTodoTasks } from '@/lib/actions/todo/todo-actions'
 import { getAllTodoSets } from '@/lib/actions/todo/todoset-actions'
 import { getUserPreferences } from '@/lib/actions/user/user-preferences'
@@ -15,6 +15,7 @@ interface TodoSetDisplay extends Omit<DefaultSet, 'icon' | 'bgImg'> {
   label: string
   icon: React.JSX.Element | null
   bgImg: string
+  emoji?: string | null
   count?: number
   card?: Card
 }
@@ -248,6 +249,7 @@ export const useGetTodoSetById = (setId: string): TodoSetDisplay | DefaultSet =>
         label: customSet.name,
         icon: null,
         bgImg: customSet.bgImg || '',
+        emoji: customSet.emoji,
       };
     }
     return defaultTodoSet[0];

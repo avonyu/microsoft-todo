@@ -5,7 +5,7 @@ import { useGetCountBySetId } from "@/store/todo-app";
 import { cloneElement, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
-import { type TodoSet } from "@/generated/prisma/client";
+import { type TodoSet } from "@/lib/types/prisma-types";
 import { useTodo } from "@/contexts/todo-context";
 import {
   ContextMenu,
@@ -87,7 +87,6 @@ export function TodoCustomSet({
   const [editName, setEditName] = useState(item.name);
   const [emoji, setEmoji] = useState(item.emoji || "");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -136,13 +135,11 @@ export function TodoCustomSet({
 
   const handleEmojiSelect = async (selectedEmoji: string) => {
     await actions.updateTodoSetOptimistic(item.id, { emoji: selectedEmoji });
-    setShowEmojiPicker(false);
   };
 
   const handleEmojiDelete = async () => {
     await actions.updateTodoSetOptimistic(item.id, { emoji: "" });
     setEmoji("");
-    setShowEmojiPicker(false);
   };
 
   if (isEditing) {
@@ -235,7 +232,7 @@ export function TodoCustomSet({
           <AlertDialogHeader>
             <AlertDialogTitle>删除列表</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除 "{item.name}" 吗？此操作无法撤销，列表中的所有任务也将被删除。
+              确定要删除 &quot;{item.name}&quot; 吗？
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
