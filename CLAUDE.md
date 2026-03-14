@@ -35,6 +35,7 @@ npm run db:format        # Format schema.prisma
 - **Database**: Prisma ORM - SQLite (dev) / PostgreSQL (prod)
 - **Auth**: Better Auth with GitHub & Google OAuth
 - **State**: Zustand with persistence and devtools
+- **Path Alias**: `@/*` maps to root directory
 
 ### Key Patterns
 
@@ -45,22 +46,33 @@ npm run db:format        # Format schema.prisma
 
 **Database Layer**
 - `lib/prisma.ts` - Singleton PrismaClient with adapter selection based on `DATABASE_URL`
-- Generated client at `generated/prisma/client` (not default `node_modules/.prisma`)
+  - SQLite: Uses `@prisma/adapter-libsql` for `.db` files
+  - PostgreSQL: Uses `@prisma/adapter-pg` for connection strings
+- Generated client at `generated/prisma/client` (custom output, not default location)
+- Schema: `prisma/schema.prisma` - defines user, account, session, todoSet, todoTask, todoTaskStep models
 
 **Server Actions** (`lib/actions/`)
 - All database mutations use `"use server"` directives
 - Actions return `ActionResponse<T>` type with `{ success, message, data }`
-- Organized by domain: `todo/`, `user/`
+- Organized by domain:
+  - `todo/todo-actions.ts` - Task CRUD
+  - `todo/todoset-actions.ts` - Set CRUD
+  - `todo/substep-actions.ts` - Task step CRUD
+  - `user/user-actions.ts` - User operations
+  - `user/user-preferences.ts` - Set preferences, background images, smart list settings
 
 **State Management** (`store/todo-app.ts`)
-- Zustand store with `persist` middleware (localStorage)
-- Selector hooks: `useGetTasks()`, `useGetSets()`, `useGetTaskById(id)`
-- Actions: `fetchInitialData()`, `addTask()`, `updateTask()`, etc.
+- Zustand store with `persist` middleware (localStorage) and `devtools`
+- Exports centralized via `store/index.ts`
+- Selector hooks: `useGetTasks()`, `useGetSets()`, `useGetTaskById(id)`, `useGetTasksBySetId(id)`
+- Smart list filters: `useGetTasksBySetId` handles virtual sets (myday, important, planned, inbox)
 
 **Todo Structure**
-- Default sets defined in `app/todo/config.tsx` (myday, important, planned, etc.)
-- Custom user sets stored in database (`TodoSet` model)
+- Default sets configured in `app/todo/lib/config.json` and rendered via `app/todo/lib/default-sets.ts`
+- Six default sets: myday, important, planned, assigned_to_me, flagged, inbox
+- Custom user sets stored in database (`todoSet` model) with emoji and background image support
 - Tasks can belong to a set or be standalone (`setId` is optional)
+- Task steps (subtasks) stored in `todoTaskStep` model
 
 ### Route Structure
 ```
@@ -73,13 +85,13 @@ app/
 ├── profile/[userid]/              # User profile
 └── todo/
     ├── page.tsx                   # Redirects to /todo/tasks/myday
-    ├── tasks/[setId]/page.tsx     # Task list view
-    └── setting/page.tsx           # Todo settings
+    ├── tasks/[setId]/page.tsx     # Task list view (smart sets + custom sets)
+    └── setting/page.tsx           # Todo settings (smart list visibility, preferences)
 ```
 
 ### Environment Variables
 Required for full functionality:
-- `DATABASE_URL` - SQLite file path or PostgreSQL connection string
-- `BETTER_AUTH_URL` - Base URL for auth (defaults to localhost:3000)
+- `DATABASE_URL` - SQLite file path (e.g., `file:./dev.db`) or PostgreSQL connection string
+- `BETTER_AUTH_URL` - Base URL for auth (defaults to `http://localhost:3000`)
 - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` - GitHub OAuth
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` - Google OAuth
