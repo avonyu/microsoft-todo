@@ -71,7 +71,12 @@ function TaskItem({
               "dark:bg-zinc-800/95 dark:hover:bg-zinc-700/95",
               className,
             )}
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.openTaskDetail(task.id);
+            }}
           >
+            {/* Checkbox */}
             <div className="relative flex items-center justify-center">
               <input
                 type="checkbox"
@@ -96,16 +101,15 @@ function TaskItem({
                 )}
               />
             </div>
+
+            {/* Task Item */}
             <div
-              className="flex-1 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                actions.openTaskDetail(task.id);
-              }}
+              className="flex-1 cursor-default"
+
             >
               <div
                 className={cn(
-                  "text-sm font-medium cursor-default",
+                  "text-sm font-medium",
                   task.isFinish ? "line-through text-gray-500" : "",
                 )}
               >
@@ -128,8 +132,8 @@ function TaskItem({
                   )}
                 </div>
               ) : currentSetId === "important" ? (
-                  <div className="text-xs text-gray-600 dark:text-gray-200 flex items-center gap-1">
-                    {task.isToday && (
+                <div className="text-xs text-gray-600 dark:text-gray-200 flex items-center gap-1">
+                  {task.isToday && (
                     <>
                       <Sun size={12} /> 我的一天
                       <span className="mx-1">·</span>
@@ -156,6 +160,8 @@ function TaskItem({
                 )
               )}
             </div>
+
+            {/* Star */}
             <button
               onClick={(e) => {
                 e.stopPropagation();

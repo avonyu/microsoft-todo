@@ -40,6 +40,12 @@ function MainArea() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
+  // 检查点击是否在 header 区域（避免干扰 header 的编辑功能）
+  const isClickOnHeader = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    return target.closest('[data-header-area]') !== null;
+  };
+
   // Get background image - use setBgImages[setId] if set, otherwise use set's bgImg or default
   // bgValue could be either bg.id (e.g., "#788cde" or "bg-1") or a direct value
   const rawBgValue = state.setBgImages?.[setId] || currentSet.bgImg || DEFAULT_BG;
@@ -84,13 +90,18 @@ function MainArea() {
 
   return (
     <div className="flex h-full w-full min-w-0">
+
       <main
         onMouseDown={(e) => {
+          if (isClickOnHeader(e)) return;
           if (isInputFocused && e.target !== inputRef.current) {
             e.preventDefault();
           }
         }}
-        onClick={() => inputRef.current?.focus()}
+        onClick={(e) => {
+          if (isClickOnHeader(e)) return;
+          inputRef.current?.focus();
+        }}
         className={cn(
           "flex-1 min-w-0 rounded-tl-md overflow-hidden transition-all duration-300 ease-in-out",
           !isColorBackground && "bg-cover bg-center",
@@ -101,84 +112,84 @@ function MainArea() {
         }}
       >
         <div className="flex flex-col px-12 h-full">
-        {/* Header */}
-        <SetHeader
-          setId={currentSet.id}
-          label={currentSet.label}
-          icon={"icon" in currentSet ? currentSet.icon : null}
-        />
+          {/* Header */}
+          <SetHeader
+            setId={currentSet.id}
+            label={currentSet.label}
+            icon={"icon" in currentSet ? currentSet.icon : null}
+          />
 
-        {/* Task list */}
-        <div
-          className={cn(
-            "flex-1 py-1 flex flex-col space-y-0.5 overflow-y-auto relative",
-            orderedTasks.length === 0 && "items-center justify-center",
-            "scrollbar-thin",
-          )}
-        >
-          {orderedTasks.map((task) => (
-            <TaskItem task={task} key={task.id} currentSetId={setId} />
-          ))}
+          {/* Task list */}
+          <div
+            className={cn(
+              "flex-1 py-1 flex flex-col space-y-0.5 overflow-y-auto relative",
+              orderedTasks.length === 0 && "items-center justify-center",
+              "scrollbar-thin",
+            )}
+          >
+            {orderedTasks.map((task) => (
+              <TaskItem task={task} key={task.id} currentSetId={setId} />
+            ))}
 
-          {/* Hint card for empty state */}
-          {showHintCard && (
-            <SetCard todoSet={currentSet as DefaultSet} />
-          )}
-        </div>
+            {/* Hint card for empty state */}
+            {showHintCard && (
+              <SetCard todoSet={currentSet as DefaultSet} />
+            )}
+          </div>
 
-        {/* Add task input */}
-        <div className="mt-2 h-20">
-          {canCreateTask && (
-            <div
-              className={cn(
-                "w-full flex items-center gap-2 px-3 py-3 border-0 bg-white/70 backdrop-blur text-gray-600 rounded text-sm hover:bg-white/80",
-                "dark:text-white dark:bg-zinc-800/70 dark:hover:bg-zinc-700/70",
-              )}
-            >
-              <div className="relative w-5 h-5 flex items-center justify-center">
-                <Circle
-                  size={20}
-                  strokeWidth={2}
-                  className={cn(
-                    "absolute text-gray-800 dark:text-white pointer-events-none transition-all duration-200 transform",
-                    isInputFocused ? "opacity-100" : "opacity-0",
+          {/* Add task input */}
+          <div className="mt-2 h-20">
+            {canCreateTask && (
+              <div
+                className={cn(
+                  "w-full flex items-center gap-2 px-3 py-3 border-0 bg-white/70 backdrop-blur text-gray-600 rounded text-sm hover:bg-white/80",
+                  "dark:text-white dark:bg-zinc-800/70 dark:hover:bg-zinc-700/70",
+                )}
+              >
+                <div className="relative w-5 h-5 flex items-center justify-center">
+                  <Circle
+                    size={20}
+                    strokeWidth={2}
+                    className={cn(
+                      "absolute text-gray-800 dark:text-white pointer-events-none transition-all duration-200 transform",
+                      isInputFocused ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                  <Plus
+                    size={20}
+                    strokeWidth={2}
+                    className={cn(
+                      "absolute text-gray-800 dark:text-white transition-all duration-200 transform",
+                      isInputFocused ? "opacity-0" : "opacity-100",
+                    )}
+                  />
+                </div>
+                <form action={handleCreateTodo} className="flex-1">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    name="content"
+                    placeholder="添加任务"
+                    className={cn(
+                      "w-full bg-transparent text-black dark:text-white",
+                      "placeholder:text-gray-800 dark:placeholder:text-white",
+                      "focus:outline-none focus:placeholder-transparent dark:focus:placeholder-transparent",
+                    )}
+                    onFocus={() => setIsInputFocused(true)}
+                    onBlur={() => setIsInputFocused(false)}
+                  />
+                  {/* Hidden fields for special sets */}
+                  {setId === "myday" && (
+                    <input type="hidden" name="isToday" value="true" />
                   )}
-                />
-                <Plus
-                  size={20}
-                  strokeWidth={2}
-                  className={cn(
-                    "absolute text-gray-800 dark:text-white transition-all duration-200 transform",
-                    isInputFocused ? "opacity-0" : "opacity-100",
+                  {setId === "important" && (
+                    <input type="hidden" name="isImportant" value="true" />
                   )}
-                />
+                </form>
               </div>
-              <form action={handleCreateTodo} className="flex-1">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  name="content"
-                  placeholder="添加任务"
-                  className={cn(
-                    "w-full bg-transparent text-black dark:text-white",
-                    "placeholder:text-gray-800 dark:placeholder:text-white",
-                    "focus:outline-none focus:placeholder-transparent dark:focus:placeholder-transparent",
-                  )}
-                  onFocus={() => setIsInputFocused(true)}
-                  onBlur={() => setIsInputFocused(false)}
-                />
-                {/* Hidden fields for special sets */}
-                {setId === "myday" && (
-                  <input type="hidden" name="isToday" value="true" />
-                )}
-                {setId === "important" && (
-                  <input type="hidden" name="isImportant" value="true" />
-                )}
-              </form>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </main>
 
       {/* Task Detail Sidebar */}
