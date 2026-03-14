@@ -48,6 +48,23 @@ npm run db:gen
 npm run db:md
 
 # Start development server
+# Clone the repository
+git clone <repository-url>
+cd microsoft-todo
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+
+# Generate Prisma client
+npm run db:gen
+
+# Run database migrations
+npm run db:md
+
+# Start development server
 npm run dev
 ```
 
