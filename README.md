@@ -10,8 +10,6 @@ A modern task management application inspired by Microsoft To-Do, rebuilt with N
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2d3748?logo=prisma)
 ![Better Auth](https://img.shields.io/badge/Auth-Better_Auth-f43f5e?logo=auth0)
 
----
-
 ## ✨ Features
 
 - 📋 **Smart Lists** - My Day, Important, Planned, Inbox
@@ -21,8 +19,6 @@ A modern task management application inspired by Microsoft To-Do, rebuilt with N
 - 🔐 **OAuth Auth** - GitHub & Google sign-in
 - 💾 **Auto-save** - Local persistence with Zustand
 - 📊 **Smart Settings** - Configure list visibility preferences
-
----
 
 ## 🚀 Quick Start
 
@@ -57,11 +53,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
----
-
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Framework:** Next.js 16 (App Router)
 - **UI Library:** React 19
 - **Styling:** Tailwind CSS v4 + shadcn/ui
@@ -69,20 +64,20 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 - **Drag & Drop:** @dnd-kit/core
 
 ### Backend
+
 - **Database ORM:** Prisma
 - **Authentication:** Better Auth
 - **Database:** SQLite (dev) / PostgreSQL (prod)
 
 ### Key Libraries
-| Library | Purpose |
-|---------|---------|
-| `lucide-react` | Icon library |
-| `react-hook-form` | Form handling |
-| `zod` | Schema validation |
-| `sonner` | Toast notifications |
-| `@radix-ui` | Headless UI components |
 
----
+| Library           | Purpose                |
+| ----------------- | ---------------------- |
+| `lucide-react`    | Icon library           |
+| `react-hook-form` | Form handling          |
+| `zod`             | Schema validation      |
+| `sonner`          | Toast notifications    |
+| `@radix-ui`       | Headless UI components |
 
 ## 📁 Project Structure
 
@@ -117,77 +112,63 @@ microsoft-todo/
 └── generated/                    # Generated Prisma client
 ```
 
----
-
 ## 📝 Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server with Turbopack |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run db:gen` | Generate Prisma client |
-| `npm run db:md` | Create and apply migration |
-| `npm run db:mr` | Reset database (drops all data) |
-| `npm run db:studio` | Open Prisma Studio GUI |
-| `npm run db:format` | Format Prisma schema |
-
----
+| Command             | Description                             |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | Start development server with Turbopack |
+| `npm run build`     | Build for production                    |
+| `npm run start`     | Start production server                 |
+| `npm run lint`      | Run ESLint                              |
+| `npm run db:gen`    | Generate Prisma client                  |
+| `npm run db:md`     | Create and apply migration              |
+| `npm run db:mr`     | Reset database (drops all data)         |
+| `npm run db:studio` | Open Prisma Studio GUI                  |
+| `npm run db:format` | Format Prisma schema                    |
 
 ## 🔧 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | Database connection string | `file:./dev.db` |
-| `BETTER_AUTH_URL` | Auth base URL | `http://localhost:3000` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth client ID | - |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret | - |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth secret | - |
-
----
+| Variable               | Description                | Default                 |
+| ---------------------- | -------------------------- | ----------------------- |
+| `DATABASE_URL`         | Database connection string | `file:./dev.db`         |
+| `BETTER_AUTH_URL`      | Auth base URL              | `http://localhost:3000` |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth client ID     | -                       |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret        | -                       |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client ID     | -                       |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth secret        | -                       |
 
 ## 📦 Database Schema
 
-| Model | Description |
-|-------|-------------|
-| `user` | User accounts |
-| `account` | OAuth provider accounts |
-| `session` | User sessions |
-| `todoSet` | Task categories (custom lists) |
-| `todoTask` | Tasks |
-| `todoTaskStep` | Subtasks |
-| `verification` | Email verification tokens |
-
----
+| Model          | Description                    |
+| -------------- | ------------------------------ |
+| `user`         | User accounts                  |
+| `account`      | OAuth provider accounts        |
+| `session`      | User sessions                  |
+| `todoSet`      | Task categories (custom lists) |
+| `todoTask`     | Tasks                          |
+| `todoTaskStep` | Subtasks                       |
+| `verification` | Email verification tokens      |
 
 ## 🎨 Default Smart Lists
 
 The app comes with 6 built-in smart lists:
 
-| ID | Label | Icon |
-|----|-------|------|
-| `myday` | My Day | ☀️ |
-| `important` | Important | ⭐ |
-| `planned` | Planned | 📋 |
-| `assigned_to_me` | Assigned to Me | 👤 |
-| `flagged` | Flagged Emails | 🚩 |
-| `inbox` | Tasks | 🏠 |
-
----
+| ID               | Label          | Icon |
+| ---------------- | -------------- | ---- |
+| `myday`          | My Day         | ☀️   |
+| `important`      | Important      | ⭐   |
+| `planned`        | Planned        | 📋   |
+| `assigned_to_me` | Assigned to Me | 👤   |
+| `flagged`        | Flagged Emails | 🚩   |
+| `inbox`          | Tasks          | 🏠   |
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
----
-
 ## 📄 License
 
 This project is for educational purposes.
-
----
 
 ## 🙏 Acknowledgments
 
@@ -195,7 +176,5 @@ This project is for educational purposes.
 - [Microsoft To-Do](https://todo.microsoft.com/) - Design inspiration
 - [shadcn/ui](https://ui.shadcn.com/) - UI components
 - [Better Auth](https://better-auth.com/) - Authentication
-
----
 
 <p align="center">Made with ❤️ by the community</p>
