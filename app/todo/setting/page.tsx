@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { useTheme } from "next-themes";
+import { useGetSmartListSettings, useTodoAppStore } from "@/store/todo-app";
 
 function Section({
   title,
@@ -85,7 +86,11 @@ function ThemeSetting() {
 }
 
 export default function TodoSettingPage() {
-  // State for settings
+  // Global smart list settings from store
+  const smartListSettings = useGetSmartListSettings();
+  const updateSmartListSetting = useTodoAppStore((state) => state.updateSmartListSetting);
+
+  // State for other settings
   const [settings, setSettings] = useState({
     diagnosticDataRequired: false,
     diagnosticDataOptional: false,
@@ -94,13 +99,6 @@ export default function TodoSettingPage() {
     playCompletionSound: true,
     contextMenu: true,
     autoStart: false,
-    smartListImportant: true,
-    smartListPlanned: true,
-    smartListAssigned: false,
-    smartListAll: false,
-    smartListCompleted: true,
-    autoHideEmptySmartLists: false,
-    showTodayTasks: true,
     connectedPlanner: true,
     connectedEmail: true,
     notificationsReminders: true,
@@ -112,6 +110,10 @@ export default function TodoSettingPage() {
 
   const toggleSetting = (key: keyof typeof settings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleSmartListSetting = (key: keyof typeof smartListSettings) => {
+    updateSmartListSetting(key, !smartListSettings[key]);
   };
 
   const { data: session } = useSession();
@@ -232,13 +234,13 @@ export default function TodoSettingPage() {
           <Button
             variant="secondary"
             size="sm"
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="bg-sky-700 hover:bg-sky-800 text-white"
           >
             设置为默认
           </Button>
         </div>
 
-        <Button variant="link" className="p-0 h-auto text-blue-500">
+        <Button variant="link" className="p-0 h-auto text-sky-700">
           键盘快捷方式
         </Button>
       </Section>
@@ -252,48 +254,48 @@ export default function TodoSettingPage() {
       {/* Smart Lists Section */}
       <Section title="智能列表">
         <SettingItemHorizontal
-          icon={<Star className="size-5 text-blue-500" />}
+          icon={<Star className="size-5 text-sky-700" />}
           label="重要"
-          checked={settings.smartListImportant}
-          onCheckedChange={() => toggleSetting("smartListImportant")}
+          checked={smartListSettings.smartListImportant}
+          onCheckedChange={() => toggleSmartListSetting("smartListImportant")}
         />
         <SettingItemHorizontal
-          icon={<Calendar className="size-5 text-blue-500" />}
+          icon={<Calendar className="size-5 text-sky-700" />}
           label="计划内"
-          checked={settings.smartListPlanned}
-          onCheckedChange={() => toggleSetting("smartListPlanned")}
+          checked={smartListSettings.smartListPlanned}
+          onCheckedChange={() => toggleSmartListSetting("smartListPlanned")}
         />
         <SettingItemHorizontal
-          icon={<Check className="size-5 text-blue-500" />}
+          icon={<Check className="size-5 text-sky-700" />}
           label="已完成"
-          checked={settings.smartListCompleted}
-          onCheckedChange={() => toggleSetting("smartListCompleted")}
+          checked={smartListSettings.smartListCompleted}
+          onCheckedChange={() => toggleSmartListSetting("smartListCompleted")}
         />
         <SettingItemHorizontal
-          icon={<Infinity className="size-5 text-blue-500" />}
+          icon={<Infinity className="size-5 text-sky-700" />}
           label="全部"
-          checked={settings.smartListAll}
-          onCheckedChange={() => toggleSetting("smartListAll")}
+          checked={smartListSettings.smartListAll}
+          onCheckedChange={() => toggleSmartListSetting("smartListAll")}
         />
         <SettingItemHorizontal
-          icon={<User className="size-5 text-blue-500" />}
+          icon={<User className="size-5 text-sky-700" />}
           label="已分配给我"
-          checked={settings.smartListAssigned}
-          onCheckedChange={() => toggleSetting("smartListAssigned")}
+          checked={smartListSettings.smartListAssigned}
+          onCheckedChange={() => toggleSmartListSetting("smartListAssigned")}
         />
 
         <div className="pt-2">
-          <SettingItemHorizontal
+          <SettingItemVertical
             label="自动隐藏空的智能列表"
-            checked={settings.autoHideEmptySmartLists}
-            onCheckedChange={() => toggleSetting("autoHideEmptySmartLists")}
+            checked={smartListSettings.autoHideEmptySmartLists}
+            onCheckedChange={() => toggleSmartListSetting("autoHideEmptySmartLists")}
           />
         </div>
         <div className="pt-2">
-          <SettingItemHorizontal
-            label="在我的“一天”视图中显示今天截止的任务"
-            checked={settings.showTodayTasks}
-            onCheckedChange={() => toggleSetting("showTodayTasks")}
+          <SettingItemVertical
+            label='在"我的一天"视图中显示今天截止的任务'
+            checked={smartListSettings.showTodayTasks}
+            onCheckedChange={() => toggleSmartListSetting("showTodayTasks")}
           />
         </div>
       </Section>
@@ -303,14 +305,14 @@ export default function TodoSettingPage() {
       {/* Connected Apps */}
       <Section title="连接的应用">
         <SettingItemHorizontal
-          icon={<Wrench className="h-4 w-4 text-green-500" />}
+          icon={<Wrench className="h-4 w-4 text-sky-700" />}
           label="Planner"
           subLabel="在 Planner 中分配给你的任务"
           checked={settings.connectedPlanner}
           onCheckedChange={() => toggleSetting("connectedPlanner")}
         />
         <SettingItemHorizontal
-          icon={<Flag className="h-4 w-4 text-blue-400" />}
+          icon={<Flag className="h-4 w-4 text-sky-700" />}
           label="标记的电子邮件"
           subLabel="你存 Outlook 中已标记的电子邮件中的任务"
           checked={settings.connectedEmail}
@@ -355,25 +357,25 @@ export default function TodoSettingPage() {
         <div className="flex flex-col space-y-2 pt-2">
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             了解详细信息
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             建议功能
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             对我们评分
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             复制会话和用户 ID
           </Button>
@@ -385,18 +387,33 @@ export default function TodoSettingPage() {
       {/* Connect */}
       <Section title="连接">
         <div className="space-y-4">
-          <div className="flex items-center space-x-3 text-blue-500 cursor-pointer hover:underline">
+          <a
+            href="https://twitter.com/microsofttodo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-3 text-sky-700 cursor-pointer hover:underline"
+          >
             <Twitter className="h-6 w-6 fill-current" />
             <span>在 Twitter 上关注我们</span>
-          </div>
-          <div className="flex items-center space-x-3 text-blue-600 cursor-pointer hover:underline">
+          </a>
+          <a
+            href="https://www.facebook.com/MicrosoftToDo/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-3 text-sky-700 cursor-pointer hover:underline"
+          >
             <Facebook className="h-6 w-6 fill-current" />
             <span>在 Facebook 上赞我们</span>
-          </div>
-          <div className="flex items-center space-x-3 text-red-500 cursor-pointer hover:underline">
+          </a>
+          <a
+            href="https://go.microsoft.com/fwlink/?linkid=2104583"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-3 text-red-500 cursor-pointer hover:underline"
+          >
             <Heart className="h-6 w-6 fill-current" />
             <span>广而告之</span>
-          </div>
+          </a>
         </div>
       </Section>
 
@@ -407,25 +424,25 @@ export default function TodoSettingPage() {
         <div className="flex flex-col space-y-2">
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             隐私
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             导出你的信息
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             Microsoft 软件许可条款
           </Button>
           <Button
             variant="link"
-            className="justify-start p-0 h-auto text-blue-500"
+            className="justify-start p-0 h-auto text-sky-700"
           >
             第三方通知
           </Button>
@@ -434,15 +451,19 @@ export default function TodoSettingPage() {
         <div className="pt-4 space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium">发送所需诊断数据</Label>
-            <Switch
-              checked={settings.diagnosticDataRequired}
-              onCheckedChange={() => toggleSetting("diagnosticDataRequired")}
-            />
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={settings.diagnosticDataRequired}
+                onCheckedChange={() => toggleSetting("diagnosticDataRequired")}
+                className="data-[state=checked]:bg-sky-500"
+              />
+              <span className="text-sm text-muted-foreground">{settings.diagnosticDataRequired ? "开" : "关"}</span>
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            我们将收集为确保“待办事项”在其安装设备上处于安全及最新状态并如期运行而需要的诊断数据。例如，你正在使用的操作系统以及是否已成功安装更新。
+            我们将收集为确保&ldquo;待办事项&rdquo;在其安装设备上处于安全及最新状态并如期运行而需要的诊断数据。例如，你正在使用的操作系统以及是否已成功安装更新。
           </p>
-          <Button variant="link" className="p-0 h-auto text-blue-500">
+          <Button variant="link" className="p-0 h-auto text-sky-700">
             了解有关诊断数据的详细信息
           </Button>
         </div>
@@ -450,15 +471,19 @@ export default function TodoSettingPage() {
         <div className="pt-4 space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium">发送可选诊断数据</Label>
-            <Switch
-              checked={settings.diagnosticDataOptional}
-              onCheckedChange={() => toggleSetting("diagnosticDataOptional")}
-            />
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={settings.diagnosticDataOptional}
+                onCheckedChange={() => toggleSetting("diagnosticDataOptional")}
+                className="data-[state=checked]:bg-sky-500"
+              />
+              <span className="text-sm text-muted-foreground">{settings.diagnosticDataOptional ? "开" : "关"}</span>
+            </div>
           </div>
           <p className="text-sm text-muted-foreground">
             我们希望向我们发送其他诊断和使用情况数据。这是我们继续改进的功能。这些数据均不包含你的姓名、文件内容或与待办事项无关的应用的信息。
           </p>
-          <Button variant="link" className="p-0 h-auto text-blue-500">
+          <Button variant="link" className="p-0 h-auto text-sky-700">
             了解有关可选诊断数据的详细信息
           </Button>
         </div>
@@ -500,11 +525,14 @@ function SettingItemHorizontal({
           )}
         </div>
       </div>
-      <Switch
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        // className="data-[state=checked]:bg-teal-700"
-      />
+      <div className="flex items-center gap-2">
+        <Switch
+          checked={checked}
+          onCheckedChange={onCheckedChange}
+          className="data-[state=checked]:bg-sky-500"
+        />
+        <span className="text-sm text-muted-foreground">{checked ? "开" : "关"}</span>
+      </div>
     </div>
   );
 }
@@ -537,7 +565,7 @@ function SettingItemVertical({
         <Switch
           checked={checked}
           onCheckedChange={onCheckedChange}
-          // className="data-[state=checked]:bg-teal-700"
+          className="data-[state=checked]:bg-sky-500"
         />
         {checked ? "开" : "关"}
       </div>

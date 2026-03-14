@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useGetUser, useGetSets, useTodoAppStore } from "@/store/todo-app";
+import { useGetUser, useGetSets, useTodoAppStore, useGetSmartListSettings } from "@/store/todo-app";
 import { defaultTodoSet } from "../lib/default-sets";
 import { cn } from "@/lib/utils";
 import { TodoSet, TodoCustomSet } from "./sets";
@@ -110,6 +110,7 @@ export default function SidePannel() {
   const { actions } = useTodo();
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
   const sets = useGetSets();
+  const smartListSettings = useGetSmartListSettings();
 
   const createNewTodoSet = async () => {
     const user = useTodoAppStore.getState().user;
@@ -132,6 +133,21 @@ export default function SidePannel() {
       router.push("/todo/tasks/inbox");
     }
   };
+
+  // 根据设置过滤默认列表
+  const filteredDefaultSets = defaultTodoSet.filter((item) => {
+    switch (item.id) {
+      case "important":
+        return smartListSettings.smartListImportant;
+      case "planned":
+        return smartListSettings.smartListPlanned;
+      case "assigned_to_me":
+        return smartListSettings.smartListAssigned;
+      // myday, flagged, inbox 始终显示
+      default:
+        return true;
+    }
+  });
 
   return (
     <Resizable
@@ -162,7 +178,7 @@ export default function SidePannel() {
 
           {/* 导航菜单 */}
           <nav className="flex-1 overflow-y-auto flex flex-col space-y-1">
-            {defaultTodoSet.map((item) => (
+            {filteredDefaultSets.map((item) => (
               <TodoSet key={item.id} item={item} />
             ))}
             <Separator />

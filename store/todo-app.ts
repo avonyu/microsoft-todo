@@ -26,6 +26,17 @@ interface Card {
   content: string
 }
 
+// 智能列表设置类型
+interface SmartListSettings {
+  smartListImportant: boolean
+  smartListPlanned: boolean
+  smartListCompleted: boolean
+  smartListAll: boolean
+  smartListAssigned: boolean
+  autoHideEmptySmartLists: boolean
+  showTodayTasks: boolean
+}
+
 // 定义状态类型
 interface TodoAppState {
   user: User | undefined
@@ -34,6 +45,7 @@ interface TodoAppState {
   isLoading: boolean
   error: string | null
   setBgImages: Record<string, string>
+  smartListSettings: SmartListSettings
 }
 
 // 定义操作类型
@@ -48,6 +60,7 @@ interface TodoAppActions {
   updateSet: (newSet: TodoSet) => void
   clearError: () => void
   setSetBgImage: (setId: string, bgImg: string) => void
+  updateSmartListSetting: (key: keyof SmartListSettings, value: boolean) => void
 }
 
 type TodoAppStore = TodoAppState & TodoAppActions
@@ -63,6 +76,15 @@ export const useTodoAppStore = create<TodoAppStore>()(
         isLoading: false,
         error: null,
         setBgImages: {},
+        smartListSettings: {
+          smartListImportant: true,
+          smartListPlanned: true,
+          smartListCompleted: true,
+          smartListAll: false,
+          smartListAssigned: true,
+          autoHideEmptySmartLists: false,
+          showTodayTasks: true,
+        },
 
         // Actions - 直接在顶层，不嵌套
         setUser: (user) => set({ user }, false, 'setUser'),
@@ -155,6 +177,14 @@ export const useTodoAppStore = create<TodoAppStore>()(
             await updateSetBgImage(userId, setId, bgImg)
           }
         },
+
+        updateSmartListSetting: (key, value) => set(
+          (state) => ({
+            smartListSettings: { ...state.smartListSettings, [key]: value }
+          }),
+          false,
+          'updateSmartListSetting'
+        ),
       }),
       {
         name: 'todo-app-storage',
@@ -163,6 +193,7 @@ export const useTodoAppStore = create<TodoAppStore>()(
           tasks: state.tasks,
           sets: state.sets,
           setBgImages: state.setBgImages,
+          smartListSettings: state.smartListSettings,
         }),
         storage: createJSONStorage(() => localStorage),
       }
@@ -181,6 +212,7 @@ export const useIsLoading = () => useTodoAppStore((state) => state.isLoading)
 export const useGetError = () => useTodoAppStore((state) => state.error)
 export const useGetSelectedBgImg = () => useTodoAppStore((state) => state.setBgImages)
 export const useGetBgImgBySetId = (setId: string) => useTodoAppStore((state) => state.setBgImages[setId])
+export const useGetSmartListSettings = () => useTodoAppStore((state) => state.smartListSettings)
 
 // 向后兼容：保留 useTodoActions 用于获取 actions
 export const useTodoActions = () => useTodoAppStore(useShallow((state) => ({
@@ -194,6 +226,7 @@ export const useTodoActions = () => useTodoAppStore(useShallow((state) => ({
   updateSet: state.updateSet,
   clearError: state.clearError,
   setSetBgImage: state.setSetBgImage,
+  updateSmartListSetting: state.updateSmartListSetting,
 })))
 
 // 参数化 selector - 使用 useShallow 避免不必要的重新渲染

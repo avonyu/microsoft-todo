@@ -8,9 +8,9 @@ import { useRouter } from "next/navigation";
 function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-zinc-900 text-foreground flex flex-col">
       {/* Header */}
-      <header className="flex items-center px-4 py-3 border-b sticky top-0 bg-background/90 backdrop-blur z-10">
+      <header className="flex items-center px-4 py-3 border-b sticky top-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur z-10">
         <Button
           variant="ghost"
           size="icon"
