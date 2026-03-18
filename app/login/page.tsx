@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,9 +14,7 @@ import {
 } from "@/components/ui/form";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -26,8 +25,14 @@ import { signInSchema, SignInData } from "@/lib/zod";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import OAuthButtons from "@/components/oauth-buttons";
+import { signInEmail } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<SignInData>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -37,7 +42,26 @@ export default function LoginPage() {
   });
 
   async function onSubmit(formData: SignInData) {
-    // "use server";
+    setIsLoading(true);
+    try {
+      const { data, error } = await signInEmail(formData.email, formData.password);
+
+      if (error) {
+        toast.error(error.message || "登录失败，请检查邮箱和密码");
+        return;
+      }
+
+      if (data) {
+        toast.success("登录成功");
+        router.push("/");
+        router.refresh();
+      }
+    } catch (err) {
+      toast.error("登录失败，请稍后重试");
+      console.error("登录错误:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -70,6 +94,7 @@ export default function LoginPage() {
                         <Input
                           type="email"
                           placeholder="请输入邮箱"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>
@@ -87,6 +112,7 @@ export default function LoginPage() {
                         <Input
                           type="password"
                           placeholder="请输入密码"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>
@@ -94,14 +120,14 @@ export default function LoginPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  登录
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "登录中..." : "登录"}
                 </Button>
                 <div className="text-center text-sm">
                   还没有账号？
                   <Link
                     href="/register"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-blue-600 hover:text-blue-800 underline ml-1"
                   >
                     立即注册
                   </Link>
