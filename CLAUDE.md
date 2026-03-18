@@ -30,6 +30,7 @@ npm run db:format        # Format schema.prisma
 ## Architecture
 
 ### Tech Stack
+
 - **Framework**: Next.js 16 (App Router) with React 19
 - **Styling**: Tailwind CSS v4 + shadcn/ui (new-york style)
 - **Database**: Prisma ORM - SQLite (dev) / PostgreSQL (prod)
@@ -40,11 +41,13 @@ npm run db:format        # Format schema.prisma
 ### Key Patterns
 
 **Authentication Flow**
+
 - `lib/auth.ts` - Server-side Better Auth configuration
 - `lib/auth-client.ts` - Client-side auth hooks (`useSession`, `signOut`, social sign-in)
 - `components/session-provider.tsx` - Syncs session to Zustand store
 
 **Database Layer**
+
 - `lib/prisma.ts` - Singleton PrismaClient with adapter selection based on `DATABASE_URL`
   - SQLite: Uses `@prisma/adapter-libsql` for `.db` files
   - PostgreSQL: Uses `@prisma/adapter-pg` for connection strings
@@ -52,6 +55,7 @@ npm run db:format        # Format schema.prisma
 - Schema: `prisma/schema.prisma` - defines user, account, session, todoSet, todoTask, todoTaskStep models
 
 **Server Actions** (`lib/actions/`)
+
 - All database mutations use `"use server"` directives
 - Actions return `ActionResponse<T>` type with `{ success, message, data }`
 - Organized by domain:
@@ -62,12 +66,14 @@ npm run db:format        # Format schema.prisma
   - `user/user-preferences.ts` - Set preferences, background images, smart list settings
 
 **State Management** (`store/todo-app.ts`)
+
 - Zustand store with `persist` middleware (localStorage) and `devtools`
 - Exports centralized via `store/index.ts`
 - Selector hooks: `useGetTasks()`, `useGetSets()`, `useGetTaskById(id)`, `useGetTasksBySetId(id)`
 - Smart list filters: `useGetTasksBySetId` handles virtual sets (myday, important, planned, inbox)
 
 **Todo Structure**
+
 - Default sets configured in `app/todo/lib/config.json` and rendered via `app/todo/lib/default-sets.ts`
 - Six default sets: myday, important, planned, assigned_to_me, flagged, inbox
 - Custom user sets stored in database (`todoSet` model) with emoji and background image support
@@ -75,6 +81,7 @@ npm run db:format        # Format schema.prisma
 - Task steps (subtasks) stored in `todoTaskStep` model
 
 ### Route Structure
+
 ```
 app/
 ├── api/auth/[...all]/route.ts    # Better Auth handler
@@ -90,7 +97,9 @@ app/
 ```
 
 ### Environment Variables
+
 Required for full functionality:
+
 - `DATABASE_URL` - SQLite file path (e.g., `file:./dev.db`) or PostgreSQL connection string
 - `BETTER_AUTH_URL` - Base URL for auth (defaults to `http://localhost:3000`)
 - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` - GitHub OAuth
