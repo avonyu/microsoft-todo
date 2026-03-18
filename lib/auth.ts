@@ -7,12 +7,16 @@ const getAuthUrl = () => {
   return baseUrl;
 };
 
-const isDevelopment = process.env.NODE_ENV === "development";
-
 export const auth = betterAuth({
+  baseURL: getAuthUrl(),
   database: prismaAdapter(prisma, {
-    provider: isDevelopment ? "sqlite" : "postgresql",
+    provider: "postgresql",
   }),
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 6,
+    autoSignIn: true,
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
@@ -34,7 +38,6 @@ export const auth = betterAuth({
   advanced: {
     trustedOrigins: [
       getAuthUrl(),
-      `${getAuthUrl()}/api/auth`,
     ],
     useSecureCookies: process.env.NODE_ENV === "production",
   },

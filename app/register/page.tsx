@@ -2,10 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -19,9 +17,7 @@ import {
 } from "@/components/ui/form";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -30,35 +26,49 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import OAuthButtons from "@/components/oauth-buttons";
 import { registerSchema, RegisterData } from "@/lib/zod";
+import { signUpEmail } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
   });
 
   async function onSubmit(values: RegisterData) {
+    setIsLoading(true);
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SITE_URL}/api/v1/register`,
-        {
-          username: values.username,
-          password: values.password, // 使用明文密码，后端会处理加密
-        }
+      const { data, error } = await signUpEmail(
+        values.username,
+        values.email,
+        values.password
       );
 
-      const data = response.data;
+      if (error) {
+        toast.error(error.message || "注册失败，请稍后重试");
+        return;
+      }
 
-      // 注册成功后跳转到登录页
-      router.push("/login");
-    } catch (error) {
-      console.error("注册失败:", error);
-      // TODO: 显示错误信息给用户
+      if (data) {
+        toast.success("注册成功，正在跳转...");
+        // autoSignIn is enabled, so redirect to todo page
+        router.push("/");
+        router.refresh();
+      }
+    } catch (err) {
+      toast.error("注册失败，请稍后重试");
+      console.error("注册错误:", err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -71,12 +81,14 @@ export default function RegisterPage() {
     >
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full gap-2 max-w-md shadow-xl dark:bg-gray-800">
-          <CardTitle className="text-2xl font-bold text-center">登录</CardTitle>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">注册</CardTitle>
+          </CardHeader>
           <CardContent>
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-5"
               >
                 <FormField
                   control={form.control}
@@ -85,7 +97,7 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>用户名</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入用户名" {...field} />
+                        <Input placeholder="请输入用户名" disabled={isLoading} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -98,7 +110,12 @@ export default function RegisterPage() {
                     <FormItem>
                       <FormLabel>邮箱</FormLabel>
                       <FormControl>
-                        <Input placeholder="请输入邮箱" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="请输入邮箱"
+                          disabled={isLoading}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -114,6 +131,7 @@ export default function RegisterPage() {
                         <Input
                           type="password"
                           placeholder="请输入密码"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>
@@ -131,6 +149,7 @@ export default function RegisterPage() {
                         <Input
                           type="password"
                           placeholder="请再次输入密码"
+                          disabled={isLoading}
                           {...field}
                         />
                       </FormControl>
@@ -138,14 +157,14 @@ export default function RegisterPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  注册
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "注册中..." : "注册"}
                 </Button>
-                <div className="text-center text-sm mb-3">
+                <div className="text-center text-sm">
                   已有账号？
                   <Link
                     href="/login"
-                    className="text-blue-600 hover:text-blue-800 underline"
+                    className="text-blue-600 hover:text-blue-800 underline ml-1"
                   >
                     立即登录
                   </Link>
@@ -153,8 +172,8 @@ export default function RegisterPage() {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex-col">
-            <Separator className="mb-3" />
+          <CardFooter className="flex-col gap-2">
+            <Separator />
             <OAuthButtons />
           </CardFooter>
         </Card>

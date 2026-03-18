@@ -51,7 +51,7 @@ function UserInfo() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-2.5 mb-2 px-2 cursor-default">
+        <div className="flex items-center gap-2.5 mb-2 px-2 cursor-default" onContextMenu={(e) => e.preventDefault()}>
           <Avatar className="size-11">
             <AvatarImage src={user?.image || undefined} alt="User Avatar" />
           </Avatar>
@@ -69,7 +69,7 @@ function UserInfo() {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuGroup>
+        {/* <DropdownMenuGroup>
           <DropdownMenuItem>
             <RefreshCw />
             重试同步
@@ -78,24 +78,24 @@ function UserInfo() {
             <CircleQuestionMark />
             了解详细信息
           </DropdownMenuItem>
-        </DropdownMenuGroup>
+        </DropdownMenuGroup> */}
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem disabled>
           <UserRoundCog />
           管理账户
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href="/">
-            <DropdownMenuItem>
-              <House />
-              返回主页
-            </DropdownMenuItem>
-          </Link>
           <Link href={user ? "/todo/setting" : "/"}>
             <DropdownMenuItem>
               <Settings />
               设置
+            </DropdownMenuItem>
+          </Link>
+          <Link href="/">
+            <DropdownMenuItem>
+              <House />
+              返回主页
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import UserAvatar from "@/components/user-avatar";
+import Image from "next/image";
 
 export default async function Header() {
   const session = await auth.api.getSession({
@@ -29,6 +30,34 @@ export default async function Header() {
       </Link>
       <div className="flex gap-2 items-center">
         <ThemeToggle />
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          className="cursor-pointer"
+        >
+          <a
+            href="https://github.com/avonyu/microsoft-todo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src="/github-mark.png"
+              alt="GitHub"
+              width={20}
+              height={20}
+              className="dark:hidden"
+            />
+            <Image
+              src="/github-mark-white.png"
+              alt="GitHub"
+              width={20}
+              height={20}
+              className="hidden dark:block"
+            />
+          </a>
+        </Button>
+
         {session ? (
           <UserAvatar />
         ) : (
