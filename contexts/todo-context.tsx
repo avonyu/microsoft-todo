@@ -15,7 +15,7 @@ import {
   useGetCountBySetId,
 } from "@/store/todo-app";
 import type { User, TodoTask, TodoSet } from "@/lib/types/prisma-types";
-import { defaultTodoSet, type DefaultSet } from "@/app/todo/lib/default-sets";
+import { defaultTodoSet, type DefaultSet, type TodoSetDisplay } from "@/app/todo/lib/default-sets";
 import {
   changeTodoTask,
   deleteTodoTask,
@@ -71,15 +71,6 @@ interface TodoContextValue {
   state: TodoState;
   actions: TodoActions;
   selectors: TodoSelectors;
-}
-
-// Display type for TodoSet (solves icon type incompatibility)
-interface TodoSetDisplay extends Omit<DefaultSet, "icon" | "bgImg"> {
-  id: string;
-  label: string;
-  icon: React.JSX.Element | null;
-  bgImg: string;
-  emoji?: string | null;
 }
 
 const TodoContext = createContext<TodoContextValue | undefined>(undefined);

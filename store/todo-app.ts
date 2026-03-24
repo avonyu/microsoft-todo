@@ -6,25 +6,7 @@ import { getAllTodoTasks } from '@/lib/actions/todo/todo-actions'
 import { getAllTodoSets } from '@/lib/actions/todo/todoset-actions'
 import { getUserPreferences } from '@/lib/actions/user/user-preferences'
 import { updateSetBgImage } from '@/lib/actions/user/user-preferences'
-import { defaultTodoSet, type DefaultSet } from '@/app/todo/lib/default-sets'
-
-// 定义显示用的类型，解决 icon 类型不兼容问题
-// 使用与 DefaultSet 相同的 icon 类型以保持兼容性
-interface TodoSetDisplay extends Omit<DefaultSet, 'icon' | 'bgImg'> {
-  id: string
-  label: string
-  icon: React.JSX.Element | null
-  bgImg: string
-  emoji?: string | null
-  count?: number
-  card?: Card
-}
-
-interface Card {
-  img: string
-  title: string | undefined
-  content: string
-}
+import { defaultTodoSet, type DefaultSet, type TodoSetDisplay } from '@/app/todo/lib/default-sets'
 
 // 智能列表设置类型
 interface SmartListSettings {
