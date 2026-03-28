@@ -1,30 +1,10 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import { devtools } from 'zustand/middleware'
-import type { TodoTask, TodoSet, User } from '@/lib/types/prisma-types'
+import { persist, createJSONStorage, devtools } from 'zustand/middleware'
+import type { TodoTask, TodoSet } from '@/lib/types/prisma-types'
 import { getAllTodoTasks } from '@/lib/actions/todo/todo-actions'
 import { getAllTodoSets } from '@/lib/actions/todo/todoset-actions'
-import { getUserPreferences } from '@/lib/actions/user/user-preferences'
-import { updateSetBgImage } from '@/lib/actions/user/user-preferences'
-import { defaultTodoSet, type DefaultSet } from '@/app/todo/lib/default-sets'
-
-// 定义显示用的类型，解决 icon 类型不兼容问题
-// 使用与 DefaultSet 相同的 icon 类型以保持兼容性
-interface TodoSetDisplay extends Omit<DefaultSet, 'icon' | 'bgImg'> {
-  id: string
-  label: string
-  icon: React.JSX.Element | null
-  bgImg: string
-  emoji?: string | null
-  count?: number
-  card?: Card
-}
-
-interface Card {
-  img: string
-  title: string | undefined
-  content: string
-}
+import { getUserPreferences, updateSetBgImage } from '@/lib/actions/user/user-preferences'
+import { defaultTodoSet, type DefaultSet, type TodoSetDisplay } from '@/app/todo/lib/default-sets'
 
 // 智能列表设置类型
 interface SmartListSettings {
@@ -39,7 +19,6 @@ interface SmartListSettings {
 
 // 定义状态类型
 interface TodoAppState {
-  user: User | undefined
   tasks: TodoTask[]
   sets: TodoSet[]
   isLoading: boolean
@@ -50,7 +29,6 @@ interface TodoAppState {
 
 // 定义操作类型
 interface TodoAppActions {
-  setUser: (user: User | undefined) => void
   fetchInitialData: (userId: string) => Promise<void>
   addTask: (newTask: TodoTask) => void
   deleteTask: (taskId: string) => void
@@ -59,7 +37,7 @@ interface TodoAppActions {
   deleteSet: (setId: string) => void
   updateSet: (newSet: TodoSet) => void
   clearError: () => void
-  setSetBgImage: (setId: string, bgImg: string) => void
+  setSetBgImage: (userId: string, setId: string, bgImg: string) => Promise<void>
   updateSmartListSetting: (key: keyof SmartListSettings, value: boolean) => void
 }
 
@@ -70,7 +48,6 @@ export const useTodoAppStore = create<TodoAppStore>()(
     persist(
       (set) => ({
         // State
-        user: undefined,
         tasks: [],
         sets: [],
         isLoading: false,
@@ -87,8 +64,6 @@ export const useTodoAppStore = create<TodoAppStore>()(
         },
 
         // Actions - 直接在顶层，不嵌套
-        setUser: (user) => set({ user }, false, 'setUser'),
-
         fetchInitialData: async (userId: string) => {
           set({ isLoading: true, error: null }, false, 'fetchInitialData/start')
           try {
@@ -165,17 +140,15 @@ export const useTodoAppStore = create<TodoAppStore>()(
         ),
 
         clearError: () => set({ error: null }, false, 'clearError'),
-        setSetBgImage: async (setId, bgImg) => {
+
+        setSetBgImage: async (userId, setId, bgImg) => {
           // First update local state
           set((state) => ({
             setBgImages: { ...state.setBgImages, [setId]: bgImg }
           }), false, 'setSetBgImage')
 
-          // Then sync to database if user is logged in
-          const userId = useTodoAppStore.getState().user?.id
-          if (userId) {
-            await updateSetBgImage(userId, setId, bgImg)
-          }
+          // Then sync to database
+          await updateSetBgImage(userId, setId, bgImg)
         },
 
         updateSmartListSetting: (key, value) => set(
@@ -189,9 +162,7 @@ export const useTodoAppStore = create<TodoAppStore>()(
       {
         name: 'todo-app-storage',
         partialize: (state) => ({
-          user: state.user,
-          tasks: state.tasks,
-          sets: state.sets,
+          // 只持久化 UI 偏好设置，业务数据每次从服务器获取
           setBgImages: state.setBgImages,
           smartListSettings: state.smartListSettings,
         }),
@@ -205,7 +176,6 @@ export const useTodoAppStore = create<TodoAppStore>()(
 // Selectors - 使用 useShallow 优化参数化 selector
 import { useShallow } from 'zustand/react/shallow'
 
-export const useGetUser = () => useTodoAppStore((state) => state.user)
 export const useGetTasks = () => useTodoAppStore((state) => state.tasks)
 export const useGetSets = () => useTodoAppStore((state) => state.sets)
 export const useIsLoading = () => useTodoAppStore((state) => state.isLoading)
@@ -216,7 +186,6 @@ export const useGetSmartListSettings = () => useTodoAppStore((state) => state.sm
 
 // 向后兼容：保留 useTodoActions 用于获取 actions
 export const useTodoActions = () => useTodoAppStore(useShallow((state) => ({
-  setUser: state.setUser,
   fetchInitialData: state.fetchInitialData,
   addTask: state.addTask,
   deleteTask: state.deleteTask,
@@ -263,7 +232,7 @@ export const useGetCountBySetId = (setId: string) =>
       case "planned":
         return state.tasks.filter((t) => t.dueDate !== null).length;
       case "inbox":
-        return state.tasks.filter((t) => t.setId === null && t.userId === state.user?.id).length;
+        return state.tasks.filter((t) => t.setId === null).length;
       default:
         return state.tasks.filter((t) => t.setId === setId).length;
     }

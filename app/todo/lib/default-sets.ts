@@ -19,7 +19,12 @@ export interface DefaultSet {
   card?: Card;
 }
 
-interface Card {
+// Display type for TodoSet (extends DefaultSet with emoji for custom sets)
+export interface TodoSetDisplay extends DefaultSet {
+  emoji?: string | null;
+}
+
+export interface Card {
   img: string;
   title: string | undefined;
   content: string;

@@ -1,30 +1,15 @@
 "use client";
 
 import { useSession } from "@/lib/auth-client";
-import { useTodoActions } from "@/store/todo-app";
-import { useEffect } from "react";
 
+// SessionProvider 现在只用于确保 session 数据可用
+// 用户信息直接通过 useSession() hook 获取，不再同步到 Zustand store
 export default function SessionProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, isPending } = useSession();
-  const setUser = useTodoActions().setUser;
-
-  useEffect(() => {
-    // 只有当 session 加载完成且不处于 pending 状态时才更新 store
-    // 注意：如果是未登录，session 为 null/undefined，我们也应该更新 store 以反映”未登录”状态
-    if (!isPending) {
-      // 假设 store 的 user 类型允许 null，如果不允许需做转换
-      // Add setPreferences field for database sync
-      setUser(
-        session?.user
-          ? { ...session.user, image: session.user.image ?? null, setPreferences: null }
-          : undefined,
-      );
-    }
-  }, [session, isPending, setUser]);
-
+  // useSession() 在客户端自动获取 session 数据
+  // 无需手动同步到 Zustand，组件直接使用 useSession() 即可
   return <>{children}</>;
 }

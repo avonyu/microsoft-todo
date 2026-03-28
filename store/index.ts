@@ -1,7 +1,6 @@
 export {
   useTodoAppStore,
   useTodoActions,
-  useGetUser,
   useGetTasks,
   useGetTaskById,
   useGetTasksBySetId,

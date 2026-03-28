@@ -29,36 +29,25 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import AlertDialogDelete from "./alert-dialog-delete";
 
 function TaskItem({
   task,
   className,
   currentSetId,
+  bgColor,
 }: {
   task: TodoTask;
   className?: string;
   currentSetId?: string;
+  bgColor?: string;
 }) {
   const { actions, selectors } = useTodo();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleDeleteClick = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
+  const handleDelete = () => {
+    setShowDeleteDialog(false);
     actions.deleteTaskOptimistic(task.id);
-    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -77,17 +66,21 @@ function TaskItem({
             }}
           >
             {/* Checkbox */}
-            <div className="relative flex items-center justify-center">
+            <div
+              className="relative flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 type="checkbox"
                 checked={task.isFinish}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  actions.toggleTaskFinish(task.id);
+                onChange={() => actions.toggleTaskFinish(task.id)}
+                style={{
+                  borderColor: '#6b7280',
+                  backgroundColor: task.isFinish ? (bgColor || '#6b7280') : undefined,
                 }}
                 className={cn(
-                  "appearance-none size-4 rounded-full border-2 border-gray-500",
-                  "peer checked:bg-gray-500 checked:border-transparent checked:border-0",
+                  "appearance-none size-4 rounded-full border-2",
+                  "peer checked:border-transparent checked:border-0",
                   "dark:border-gray-300",
                 )}
               />
@@ -110,7 +103,7 @@ function TaskItem({
               <div
                 className={cn(
                   "text-sm font-medium",
-                  task.isFinish ? "line-through text-gray-500" : "",
+                  task.isFinish ? "line-through decoration-1 text-gray-500" : "",
                 )}
               >
                 {task.content}
@@ -232,37 +225,22 @@ function TaskItem({
           </ContextMenuSub>
           <ContextMenuSeparator />
           <ContextMenuItem
-            onClick={handleDeleteClick}
+            onClick={() => setShowDeleteDialog(true)}
             className="text-red-500 cursor-pointer"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             删除任务
-            <ContextMenuShortcut>Delete</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>删除任务</AlertDialogTitle>
-            <AlertDialogDescription>
-              将永久删除&quot;{task.content}&quot;
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      <AlertDialogDelete
+        type="任务"
+        content={task.content}
+        onDelete={handleDelete}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+      />
     </>
   );
 }

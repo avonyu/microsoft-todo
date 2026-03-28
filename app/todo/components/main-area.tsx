@@ -8,6 +8,7 @@ import TaskItem from "./task-item";
 import { createTodoTask } from "@/lib/actions/todo/todo-actions";
 import reorder from "@/lib/utils/reorder";
 import { useTodo } from "@/contexts/todo-context";
+import { useSession } from "@/lib/auth-client";
 import SetCard from "./set-card";
 import { defaultTodoSet, type DefaultSet } from "../lib/default-sets";
 import { SetHeader } from "./set-header";
@@ -33,6 +34,7 @@ function MainArea() {
   const setId = params.setId as string;
 
   const { state, actions, selectors } = useTodo();
+  const { data: session } = useSession();
   const { isTaskDetailOpen, selectedTaskId } = state;
   const currentSet = selectors.getTodoSetById(setId) || defaultTodoSet[0];
   const tasks = selectors.getTasksBySetId(setId);
@@ -63,7 +65,8 @@ function MainArea() {
 
   // Handle creating a new task
   const handleCreateTodo = async (formData: FormData) => {
-    if (!state.user?.id) return;
+    const userId = session?.user?.id;
+    if (!userId) return;
     const content = formData.get("content") as string;
     if (!content.trim()) return;
 
@@ -72,7 +75,7 @@ function MainArea() {
       formData.set("setId", setId);
     }
 
-    const res = await createTodoTask(state.user.id, formData);
+    const res = await createTodoTask(userId, formData);
 
     if (res.success && res.data) {
       actions.addTask(res.data);
@@ -128,7 +131,7 @@ function MainArea() {
             )}
           >
             {orderedTasks.map((task) => (
-              <TaskItem task={task} key={task.id} currentSetId={setId} />
+              <TaskItem task={task} key={task.id} currentSetId={setId} bgColor={bgColor} />
             ))}
 
             {/* Hint card for empty state */}
@@ -197,6 +200,7 @@ function MainArea() {
         <TaskDetailSidebar
           taskId={selectedTaskId}
           onClose={actions.closeTaskDetail}
+          bgColor={bgColor}
         />
       )}
     </div>

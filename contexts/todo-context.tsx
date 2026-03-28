@@ -4,7 +4,6 @@ import { createContext, useContext, ReactNode, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   useTodoAppStore,
-  useGetUser,
   useGetTasks,
   useGetSets,
   useIsLoading,
@@ -14,8 +13,8 @@ import {
   useGetTodoSetById,
   useGetCountBySetId,
 } from "@/store/todo-app";
-import type { User, TodoTask, TodoSet } from "@/lib/types/prisma-types";
-import { defaultTodoSet, type DefaultSet } from "@/app/todo/lib/default-sets";
+import type { TodoTask, TodoSet } from "@/lib/types/prisma-types";
+import { defaultTodoSet, type DefaultSet, type TodoSetDisplay } from "@/app/todo/lib/default-sets";
 import {
   changeTodoTask,
   deleteTodoTask,
@@ -28,7 +27,6 @@ import {
 
 // Types for the context
 interface TodoState {
-  user: User | undefined;
   tasks: TodoTask[];
   sets: TodoSet[];
   isLoading: boolean;
@@ -39,7 +37,6 @@ interface TodoState {
 }
 
 interface TodoActions {
-  setUser: (user: User | undefined) => void;
   fetchInitialData: (userId: string) => Promise<void>;
   addTask: (newTask: TodoTask) => void;
   updateTask: (newTask: TodoTask) => void;
@@ -48,7 +45,7 @@ interface TodoActions {
   updateSet: (newSet: TodoSet) => void;
   deleteSet: (setId: string) => void;
   clearError: () => void;
-  setSetBgImage: (setId: string, bgImg: string) => void;
+  setSetBgImage: (userId: string, setId: string, bgImg: string) => Promise<void>;
   openTaskDetail: (taskId: string) => void;
   closeTaskDetail: () => void;
   // Optimistic actions
@@ -73,15 +70,6 @@ interface TodoContextValue {
   selectors: TodoSelectors;
 }
 
-// Display type for TodoSet (solves icon type incompatibility)
-interface TodoSetDisplay extends Omit<DefaultSet, "icon" | "bgImg"> {
-  id: string;
-  label: string;
-  icon: React.JSX.Element | null;
-  bgImg: string;
-  emoji?: string | null;
-}
-
 const TodoContext = createContext<TodoContextValue | undefined>(undefined);
 
 export function TodoProvider({ children }: { children: ReactNode }) {
@@ -93,7 +81,6 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
 
   const state = useTodoAppStore(useShallow((s) => ({
-    user: s.user,
     tasks: s.tasks,
     sets: s.sets,
     isLoading: s.isLoading,
@@ -105,7 +92,6 @@ export function TodoProvider({ children }: { children: ReactNode }) {
 
   // Get actions from Zustand store (use getState() for async operations)
   const storeActions = useTodoAppStore(useShallow((s) => ({
-    setUser: s.setUser,
     fetchInitialData: s.fetchInitialData,
     addTask: s.addTask,
     updateTask: s.updateTask,
@@ -395,16 +381,21 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       case "planned":
         return state.tasks.filter((t) => t.dueDate !== null).length;
       case "inbox":
-        return state.tasks.filter((t) => t.setId === null && t.userId === state.user?.id).length;
+        return state.tasks.filter((t) => t.setId === null).length;
       default:
         return state.tasks.filter((t) => t.setId === setId).length;
     }
   };
 
-  // Task detail sidebar actions
+  // Task detail sidebar actions - toggle: close if same task, open otherwise
   const openTaskDetail = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setIsTaskDetailOpen(true);
+    if (isTaskDetailOpen && selectedTaskId === taskId) {
+      setIsTaskDetailOpen(false);
+      setSelectedTaskId(null);
+    } else {
+      setSelectedTaskId(taskId);
+      setIsTaskDetailOpen(true);
+    }
   };
 
   const closeTaskDetail = () => {
@@ -447,4 +438,4 @@ export function useTodo() {
 }
 
 // Re-export convenience hooks for components that only need specific data
-export { useGetUser, useGetTasks, useGetSets, useIsLoading, useGetError };
+export { useGetTasks, useGetSets, useIsLoading, useGetError };
