@@ -35,10 +35,12 @@ function TaskItem({
   task,
   className,
   currentSetId,
+  bgColor,
 }: {
   task: TodoTask;
   className?: string;
   currentSetId?: string;
+  bgColor?: string;
 }) {
   const { actions, selectors } = useTodo();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -64,17 +66,21 @@ function TaskItem({
             }}
           >
             {/* Checkbox */}
-            <div className="relative flex items-center justify-center">
+            <div
+              className="relative flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
               <input
                 type="checkbox"
                 checked={task.isFinish}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  actions.toggleTaskFinish(task.id);
+                onChange={() => actions.toggleTaskFinish(task.id)}
+                style={{
+                  borderColor: '#6b7280',
+                  backgroundColor: task.isFinish ? (bgColor || '#6b7280') : undefined,
                 }}
                 className={cn(
-                  "appearance-none size-4 rounded-full border-2 border-gray-500",
-                  "peer checked:bg-gray-500 checked:border-transparent checked:border-0",
+                  "appearance-none size-4 rounded-full border-2",
+                  "peer checked:border-transparent checked:border-0",
                   "dark:border-gray-300",
                 )}
               />
@@ -97,7 +103,7 @@ function TaskItem({
               <div
                 className={cn(
                   "text-sm font-medium",
-                  task.isFinish ? "line-through text-gray-500" : "",
+                  task.isFinish ? "line-through decoration-1 text-gray-500" : "",
                 )}
               >
                 {task.content}

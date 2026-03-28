@@ -128,7 +128,7 @@ function MainArea() {
             )}
           >
             {orderedTasks.map((task) => (
-              <TaskItem task={task} key={task.id} currentSetId={setId} />
+              <TaskItem task={task} key={task.id} currentSetId={setId} bgColor={bgColor} />
             ))}
 
             {/* Hint card for empty state */}
@@ -197,6 +197,7 @@ function MainArea() {
         <TaskDetailSidebar
           taskId={selectedTaskId}
           onClose={actions.closeTaskDetail}
+          bgColor={bgColor}
         />
       )}
     </div>

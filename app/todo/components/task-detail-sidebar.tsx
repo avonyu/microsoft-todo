@@ -1,19 +1,22 @@
 "use client";
 
 import { Resizable } from "re-resizable";
-import { X, Paperclip, CalendarDays, CalendarSync, AlarmClock, Trash2, Star, Plus } from "lucide-react";
+import { X, Paperclip, CalendarDays, CalendarSync, AlarmClock, Trash2, Star, Plus, Check, UserRoundPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/todo-context";
 import AlertDialogDelete from "./alert-dialog-delete";
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Separator } from '@/components/ui/separator'
 import { changeTodoTask } from "@/lib/actions/todo/todo-actions";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { AlertDialog, AlertDialogCancel, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogFooter, AlertDialogContent, AlertDialogDescription } from "@/components/ui/alert-dialog";
+import { Button } from '@/components/ui/button'
 
 interface TaskDetailSidebarProps {
   taskId: string;
   onClose: () => void;
   initialWidth?: number;
+  bgColor?: string;
 }
 
 const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -25,14 +28,23 @@ function formatDate(date: Date): string {
   return `${month}月${day}日，${weekday}`;
 }
 
-export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskDetailSidebarProps) {
+export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor }: TaskDetailSidebarProps) {
   const { state, actions, selectors } = useTodo();
   const [commentUpdateTime, setCommentUpdateTime] = useState('')
   const [isEditingContent, setIsEditingContent] = useState(false)
   const [editedContent, setEditedContent] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const task = state.tasks.find((t) => t.id === taskId);
 
   if (!task) return null;
+
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
 
   const handleStartEdit = () => {
     setEditedContent(task.content)
@@ -111,20 +123,36 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskD
             {/* Main Card */}
             <div className="border bg-zinc-50 w-full rounded-xs p-3 min-h-18 space-y-4">
               <div className="flex justify-between gap-2">
-                <input
-                  type="checkbox"
-                  checked={task.isFinish}
-                  onChange={handleToggleFinish}
-                  className={cn(
-                    "mt-1 appearance-none size-4 rounded-full border-2 border-gray-500",
-                    "peer checked:bg-gray-500 checked:border-transparent",
-                  )}
-                />
+                <div className="relative flex items-center justify-center mt-1">
+                  <input
+                    type="checkbox"
+                    checked={task.isFinish}
+                    onChange={handleToggleFinish}
+                    style={{
+                      borderColor: '#6b7280',
+                      backgroundColor: task.isFinish ? (bgColor || '#6b7280') : undefined,
+                    }}
+                    className={cn(
+                      "appearance-none size-4 rounded-full border-2",
+                      "peer checked:border-transparent checked:border-0",
+                      "dark:border-gray-300",
+                    )}
+                  />
+                  <Check
+                    size={10}
+                    strokeWidth={4}
+                    className={cn(
+                      "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+                      "text-gray-500 dark:text-gray-200 pointer-events-none opacity-0",
+                      "peer-checked:opacity-100 peer-checked:text-gray-200 dark:peer-checked:text-gray-900 peer-hover:opacity-100",
+                    )}
+                  />
+                </div>
                 {isEditingContent ? (
                   <input
                     className={cn(
                       "flex-auto text-base font-medium bg-transparent focus:outline-none",
-                      task.isFinish && "line-through text-gray-500"
+                      task.isFinish && "line-through decoration-1 text-gray-500"
                     )}
                     value={editedContent}
                     onChange={(e) => setEditedContent(e.target.value)}
@@ -140,7 +168,7 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskD
                     onClick={handleStartEdit}
                     className={cn(
                       "flex-auto text-base font-medium text-gray-800 dark:text-gray-100",
-                      task.isFinish && "line-through text-gray-500"
+                      task.isFinish && "line-through decoration-1 text-black"
                     )}
                   >
                     {task.content}
@@ -244,21 +272,52 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskD
             </div>
 
             {/* Add Files */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-500 text-xs" >
+                  <UserRoundPlus size={14} />
+                  分配给
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-sm p-3 gap-3 w-75">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="w-full text-center text-sm">分配给</AlertDialogTitle>
+                  <Separator />
+                  <AlertDialogDescription className="space-y-2">
+                    <div className="text-center">Pic. placeholder</div>
+                    <div className="text-black mb-5 text-center">
+                      请邀请一些人员。在其加入后，将在此处显示。
+                    </div>
+                    <Button size="sm" className="w-full h-7 text-xs bg-sky-700 hover:bg-sky-600 rounded-sm">创建邀请链接</Button>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Separator />
+                <AlertDialogFooter>
+                  <AlertDialogCancel size="sm" className="text-xs w-15 rounded-sm h-7!">关闭</AlertDialogCancel>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Add Files */}
             <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-500 text-xs" onClick={() => handleAddFile}>
               <Paperclip size={14} />
               添加文件
             </button>
 
             {/* Comment */}
-            <div className="border bg-zinc-50 w-full rounded-xs p-3 min-h-18 space-y-6">
-              <input
-                className="focus:outline-none text-sm placeholder:text-xs placeholder:text-gray-500"
+            <div className="border bg-zinc-50 w-full rounded-xs p-3">
+              <textarea
+                ref={textareaRef}
+                className="focus:outline-none text-xs placeholder:text-xs placeholder:text-gray-500 w-full resize-none overflow-hidden"
                 placeholder="添加备注"
                 value={commentUpdateTime}
-                onChange={(e) => setCommentUpdateTime(e.target.value)}
+                onChange={(e) => {
+                  setCommentUpdateTime(e.target.value);
+                  adjustTextareaHeight();
+                }}
               />
               {commentUpdateTime && (
-                <div className="text-xs text-zinc-500">更新于 {formatDate(new Date())}</div>
+                <div className="text-xs text-zinc-500 mt-1">更新于 {formatDate(new Date())}</div>
               )}
             </div>
           </div>
