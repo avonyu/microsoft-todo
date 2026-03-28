@@ -18,6 +18,7 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { useTodo } from "@/contexts/todo-context";
+import { useSession } from "@/lib/auth-client";
 import config from "@/app/todo/lib/config.json";
 import { cn } from "@/lib/utils";
 
@@ -37,11 +38,15 @@ interface HeaderDropdownMenuProps {
 
 export function HeaderDropdownMenu({ setId }: HeaderDropdownMenuProps) {
   const { actions } = useTodo();
+  const { data: session } = useSession();
 
   const handleSetBackground = async (bgId: string, bgValue: string) => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
     // Store bgId in local state and sync to database
     // Both default sets and custom sets will now save to database
-    await actions.setSetBgImage(setId, bgId);
+    await actions.setSetBgImage(userId, setId, bgId);
 
     // Also update custom sets in the TodoSet table for backward compatibility
     if (!DEFAULT_SET_IDS.includes(setId)) {

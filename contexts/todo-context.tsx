@@ -4,7 +4,6 @@ import { createContext, useContext, ReactNode, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
   useTodoAppStore,
-  useGetUser,
   useGetTasks,
   useGetSets,
   useIsLoading,
@@ -14,7 +13,7 @@ import {
   useGetTodoSetById,
   useGetCountBySetId,
 } from "@/store/todo-app";
-import type { User, TodoTask, TodoSet } from "@/lib/types/prisma-types";
+import type { TodoTask, TodoSet } from "@/lib/types/prisma-types";
 import { defaultTodoSet, type DefaultSet, type TodoSetDisplay } from "@/app/todo/lib/default-sets";
 import {
   changeTodoTask,
@@ -28,7 +27,6 @@ import {
 
 // Types for the context
 interface TodoState {
-  user: User | undefined;
   tasks: TodoTask[];
   sets: TodoSet[];
   isLoading: boolean;
@@ -39,7 +37,6 @@ interface TodoState {
 }
 
 interface TodoActions {
-  setUser: (user: User | undefined) => void;
   fetchInitialData: (userId: string) => Promise<void>;
   addTask: (newTask: TodoTask) => void;
   updateTask: (newTask: TodoTask) => void;
@@ -48,7 +45,7 @@ interface TodoActions {
   updateSet: (newSet: TodoSet) => void;
   deleteSet: (setId: string) => void;
   clearError: () => void;
-  setSetBgImage: (setId: string, bgImg: string) => void;
+  setSetBgImage: (userId: string, setId: string, bgImg: string) => Promise<void>;
   openTaskDetail: (taskId: string) => void;
   closeTaskDetail: () => void;
   // Optimistic actions
@@ -84,7 +81,6 @@ export function TodoProvider({ children }: { children: ReactNode }) {
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false);
 
   const state = useTodoAppStore(useShallow((s) => ({
-    user: s.user,
     tasks: s.tasks,
     sets: s.sets,
     isLoading: s.isLoading,
@@ -96,7 +92,6 @@ export function TodoProvider({ children }: { children: ReactNode }) {
 
   // Get actions from Zustand store (use getState() for async operations)
   const storeActions = useTodoAppStore(useShallow((s) => ({
-    setUser: s.setUser,
     fetchInitialData: s.fetchInitialData,
     addTask: s.addTask,
     updateTask: s.updateTask,
@@ -386,7 +381,7 @@ export function TodoProvider({ children }: { children: ReactNode }) {
       case "planned":
         return state.tasks.filter((t) => t.dueDate !== null).length;
       case "inbox":
-        return state.tasks.filter((t) => t.setId === null && t.userId === state.user?.id).length;
+        return state.tasks.filter((t) => t.setId === null).length;
       default:
         return state.tasks.filter((t) => t.setId === setId).length;
     }
@@ -443,4 +438,4 @@ export function useTodo() {
 }
 
 // Re-export convenience hooks for components that only need specific data
-export { useGetUser, useGetTasks, useGetSets, useIsLoading, useGetError };
+export { useGetTasks, useGetSets, useIsLoading, useGetError };

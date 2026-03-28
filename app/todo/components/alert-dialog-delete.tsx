@@ -34,7 +34,7 @@ export default function AlertDialogDelete({ type, content, onDelete, children, o
       <AlertDialogContent className="w-70 rounded-sm p-4 gap-12">
         <AlertDialogHeader>
           <AlertDialogTitle>删除{type}</AlertDialogTitle>
-          <AlertDialogDescription className="text-black text-xs">
+          <AlertDialogDescription className="text-black dark:text-white text-xs">
             将永久删除 &ldquo;{content}&rdquo;。
           </AlertDialogDescription>
         </AlertDialogHeader>

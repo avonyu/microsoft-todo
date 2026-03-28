@@ -40,14 +40,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useGetUser, useGetSets, useTodoAppStore, useGetSmartListSettings } from "@/store/todo-app";
+import { useGetSets, useGetSmartListSettings } from "@/store/todo-app";
+import { useSession } from "@/lib/auth-client";
 import { defaultTodoSet } from "../lib/default-sets";
 import { cn } from "@/lib/utils";
 import { TodoSet, TodoCustomSet } from "./sets";
 import { useTodo } from "@/contexts/todo-context";
 
 function UserInfo() {
-  const user = useGetUser();
+  const { data: session } = useSession();
+  const user = session?.user;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -108,15 +110,15 @@ export default function SidePannel() {
   const router = useRouter();
   const pathname = usePathname();
   const { actions } = useTodo();
+  const { data: session } = useSession();
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
   const sets = useGetSets();
   const smartListSettings = useGetSmartListSettings();
 
   const createNewTodoSet = async () => {
-    const user = useTodoAppStore.getState().user;
-    if (!user) return;
+    if (!session?.user?.id) return;
 
-    const newSet = await actions.createTodoSetOptimistic(user.id, "无标题列表");
+    const newSet = await actions.createTodoSetOptimistic(session.user.id, "无标题列表");
     if (newSet) {
       setEditingSetId(newSet.id);
       router.push(`/todo/tasks/${newSet.id}`);
@@ -197,7 +199,7 @@ export default function SidePannel() {
         </div>
 
         {/* 新建列表按钮 */}
-        <div className="flex w-full bg-white dark:bg-zinc-800 border-t border-t-zinc-200">
+        <div className="flex w-full bg-white dark:bg-zinc-800 border-t">
           <button
             onClick={() => {
               createNewTodoSet();
