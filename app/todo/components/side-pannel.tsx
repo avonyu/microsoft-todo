@@ -156,7 +156,7 @@ export default function SidePannel() {
       minWidth={220}
       maxWidth={400}
     >
-      <aside className="flex flex-col h-full w-full relative bg-white dark:bg-zinc-800">
+      <aside className="flex flex-col h-full w-full relative bg-zinc-100 dark:bg-zinc-800">
         {/* 侧边栏内容 */}
         <div className="h-full flex flex-col overflow-hidden px-1 pt-3 w-full relative">
           {/* 个人信息区 */}
@@ -197,7 +197,7 @@ export default function SidePannel() {
         </div>
 
         {/* 新建列表按钮 */}
-        <div className="flex w-full bg-white dark:bg-zinc-800 border-t">
+        <div className="flex w-full bg-white dark:bg-zinc-800 border-t border-t-zinc-200">
           <button
             onClick={() => {
               createNewTodoSet();
