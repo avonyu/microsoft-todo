@@ -392,10 +392,15 @@ export function TodoProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Task detail sidebar actions
+  // Task detail sidebar actions - toggle: close if same task, open otherwise
   const openTaskDetail = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setIsTaskDetailOpen(true);
+    if (isTaskDetailOpen && selectedTaskId === taskId) {
+      setIsTaskDetailOpen(false);
+      setSelectedTaskId(null);
+    } else {
+      setSelectedTaskId(taskId);
+      setIsTaskDetailOpen(true);
+    }
   };
 
   const closeTaskDetail = () => {
