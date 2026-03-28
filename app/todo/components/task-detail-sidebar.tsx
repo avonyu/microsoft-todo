@@ -4,11 +4,21 @@ import { Resizable } from "re-resizable";
 import { X, Calendar, Sun, Star, Trash2, Clock, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/todo-context";
+import AlertDialogDelete from "./alert-dialog-delete";
 
 interface TaskDetailSidebarProps {
   taskId: string;
   onClose: () => void;
   initialWidth?: number;
+}
+
+const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+function formatDate(date: Date): string {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekday = weekdays[date.getDay()];
+  return `${month}月${day}日，${weekday}`;
 }
 
 export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskDetailSidebarProps) {
@@ -158,31 +168,16 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380 }: TaskD
               )}
             </div>
           </div>
-
-          {/* Created/Updated info */}
-          <div className="pt-4 border-t border-gray-200 dark:border-zinc-700 space-y-2">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Clock size={14} />
-              <span>创建于 {new Date(task.createdAt).toLocaleDateString("zh-CN")}</span>
-            </div>
-            {task.updatedAt && (
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <Clock size={14} />
-                <span>更新于 {new Date(task.updatedAt).toLocaleDateString("zh-CN")}</span>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Footer actions */}
-        <div className="p-4 border-t border-gray-200 dark:border-zinc-700">
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors w-full"
-          >
-            <Trash2 size={16} />
-            删除任务
-          </button>
+        <div className="flex w-full h-10 bg-white dark:bg-zinc-800 border-t">
+          <span className="flex-1 flex items-center justify-center text-zinc-500 text-sm">创建于 {formatDate(new Date(task.createdAt))}</span>
+          <AlertDialogDelete type="任务" content={task.content} onDelete={handleDelete}>
+            <button className="size-8 px-2 h-full hover:bg-gray-100 dark:hover:bg-zinc-700">
+              <Trash2 size={14} className="text-zinc-500" />
+            </button>
+          </AlertDialogDelete>
         </div>
       </div>
     </Resizable>

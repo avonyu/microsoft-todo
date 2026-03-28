@@ -17,18 +17,9 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, TextAlignJustify, Smile } from "lucide-react";
 import { EmojiPicker } from "./emoji-picker";
+import AlertDialogDelete from "./alert-dialog-delete";
 
 export function TodoSet({ item }: { item: DefaultSet }) {
   const router = useRouter();
@@ -121,11 +112,7 @@ export function TodoCustomSet({
     }
   };
 
-  const handleDeleteClick = () => {
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteConfirm = async () => {
+  const handleDelete = async () => {
     setShowDeleteDialog(false);
     const success = await actions.deleteTodoSetOptimistic(item.id);
     if (success && onDelete) {
@@ -217,7 +204,7 @@ export function TodoCustomSet({
           </ContextMenuSub>
           <ContextMenuSeparator />
           <ContextMenuItem
-            onClick={handleDeleteClick}
+            onClick={() => setShowDeleteDialog(true)}
             variant="destructive"
             className="cursor-pointer"
           >
@@ -227,25 +214,13 @@ export function TodoCustomSet({
         </ContextMenuContent>
       </ContextMenu>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>删除列表</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除 &quot;{item.name}&quot; 吗？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AlertDialogDelete
+        type="列表"
+        content={item.name}
+        onDelete={handleDelete}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+      />
     </>
   );
 }

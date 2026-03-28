@@ -29,16 +29,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui/context-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import AlertDialogDelete from "./alert-dialog-delete";
 
 function TaskItem({
   task,
@@ -50,15 +41,11 @@ function TaskItem({
   currentSetId?: string;
 }) {
   const { actions, selectors } = useTodo();
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleDeleteClick = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
+  const handleDelete = () => {
+    setShowDeleteDialog(false);
     actions.deleteTaskOptimistic(task.id);
-    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -232,37 +219,22 @@ function TaskItem({
           </ContextMenuSub>
           <ContextMenuSeparator />
           <ContextMenuItem
-            onClick={handleDeleteClick}
+            onClick={() => setShowDeleteDialog(true)}
             className="text-red-500 cursor-pointer"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             删除任务
-            <ContextMenuShortcut>Delete</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>删除任务</AlertDialogTitle>
-            <AlertDialogDescription>
-              将永久删除&quot;{task.content}&quot;
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      <AlertDialogDelete
+        type="任务"
+        content={task.content}
+        onDelete={handleDelete}
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+      />
     </>
   );
 }
