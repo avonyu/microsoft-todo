@@ -5,7 +5,7 @@ import { X, Paperclip, CalendarDays, CalendarSync, AlarmClock, Trash2, Star, Plu
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/todo-context";
 import AlertDialogDelete from "./alert-dialog-delete";
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Separator } from '@/components/ui/separator'
 import { changeTodoTask } from "@/lib/actions/todo/todo-actions";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
@@ -28,13 +28,40 @@ function formatDate(date: Date): string {
   return `${month}月${day}日，${weekday}`;
 }
 
+function formatRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffMinutes < 1) {
+    return "片刻前";
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes}分钟前`;
+  } else if (diffHours < 24) {
+    return `${diffHours}小时前`;
+  } else {
+    return formatDate(date);
+  }
+}
+
 export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor }: TaskDetailSidebarProps) {
   const { state, actions, selectors } = useTodo();
-  const [commentUpdateTime, setCommentUpdateTime] = useState('')
+  const [comment, setComment] = useState('')
   const [isEditingContent, setIsEditingContent] = useState(false)
   const [editedContent, setEditedContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const task = state.tasks.find((t) => t.id === taskId);
+
+  // 切换任务时重置备注内容
+  useEffect(() => {
+    setComment(task?.comment || '');
+  }, [taskId, task?.comment]);
+
+  // 调整textarea高度
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [comment]);
 
   if (!task) return null;
 
@@ -65,6 +92,19 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
   const handleCancelEdit = () => {
     setIsEditingContent(false)
   }
+
+  // 失焦时保存备注
+  const handleCommentBlur = async () => {
+    if (comment !== task.comment) {
+      const res = await changeTodoTask(task.id, {
+        comment: comment,
+        commentUpdateAt: comment ? new Date() : null
+      });
+      if (res.success && res.data) {
+        actions.updateTask(res.data);
+      }
+    }
+  };
 
   const handleToggleImportant = () => {
     actions.toggleTaskImportant(task.id);
@@ -310,14 +350,12 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
                 ref={textareaRef}
                 className="focus:outline-none text-xs placeholder:text-xs placeholder:text-gray-500 w-full resize-none overflow-hidden"
                 placeholder="添加备注"
-                value={commentUpdateTime}
-                onChange={(e) => {
-                  setCommentUpdateTime(e.target.value);
-                  adjustTextareaHeight();
-                }}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                onBlur={handleCommentBlur}
               />
-              {commentUpdateTime && (
-                <div className="text-xs text-zinc-500 mt-1">更新于 {formatDate(new Date())}</div>
+              {comment && task.commentUpdateAt && (
+                <div className="text-xs text-zinc-500 mt-1">更新于 {formatRelativeTime(new Date(task.commentUpdateAt))}</div>
               )}
             </div>
           </div>

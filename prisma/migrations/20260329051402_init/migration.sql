@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "todoTask" ADD COLUMN     "commentUpdateAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP;

@@ -56,6 +56,7 @@ model todoTask {
   isToday      Boolean        @default(false)
   setId        String?
   comment      String?
+  commentUpdateAt DateTime?   @default(now())
   dueDate      DateTime?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime
