@@ -1,7 +1,7 @@
 "use client";
 
 import { Resizable } from "re-resizable";
-import { X, Paperclip, CalendarDays, CalendarSync, AlarmClock, Trash2, Star, Plus, Check, UserRoundPlus } from "lucide-react";
+import { X, Paperclip, CalendarDays, CalendarSync, AlarmClock, Trash2, Star, Plus, Check, Sun, UserRoundPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodo } from "@/contexts/todo-context";
 import AlertDialogDelete from "./alert-dialog-delete";
@@ -220,11 +220,35 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
                     "mt-1",
                     task.isImportant ? "text-gray-500 fill-gray-500" : "text-gray-500"
                   )}
-                  onClick={() => actions.toggleTaskImportant(task.id)}
+                  onClick={() => handleToggleImportant()}
                 />
               </div>
               <div className="text-xs text-sky-700 flex gap-2"><Plus size={14} />添加步骤</div>
             </div>
+
+            {/* My Day */}
+            <div className="border bg-zinc-50 w-full rounded-xs flex">
+              <button
+                className={cn(
+                  "flex-1 py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-600 text-xs",
+                  !task.isToday && "hover:bg-zinc-100",
+                  task.isToday && "text-sky-700"
+                )}
+                onClick={() => !task.isToday && handleToggleToday()}
+              >
+                <Sun size="14" className={task.isToday ? "text-sky-700" : ""} />
+                {task.isToday ? "已添加到我的一天" : "添加到我的一天"}
+              </button>
+              {task.isToday &&
+                <button
+                  className="hover:bg-zinc-100 py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-600 text-xs"
+                  onClick={() => task.isToday && handleToggleToday()}
+                >
+                  <X size="14" />
+                </button>
+              }
+            </div>
+
 
             {/* Time */}
             <div className="border bg-zinc-50 p-0.5 w-full rounded-xs min-h-18">
@@ -314,7 +338,7 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
             {/* Add Files */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-500 text-xs" >
+                <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-600 text-xs" >
                   <UserRoundPlus size={14} />
                   分配给
                 </button>
@@ -339,7 +363,7 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
             </AlertDialog>
 
             {/* Add Files */}
-            <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-500 text-xs" onClick={() => handleAddFile}>
+            <button className="border bg-zinc-50 hover:bg-zinc-100 w-full rounded-xs py-2 px-3 h-10 space-y-6 flex items-center gap-2 text-gray-600 text-xs" onClick={() => handleAddFile}>
               <Paperclip size={14} />
               添加文件
             </button>
@@ -348,7 +372,7 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
             <div className="border bg-zinc-50 w-full rounded-xs p-3">
               <textarea
                 ref={textareaRef}
-                className="focus:outline-none text-xs placeholder:text-xs placeholder:text-gray-500 w-full resize-none overflow-hidden"
+                className="focus:outline-none text-xs placeholder:text-xs placeholder:text-gray-600 w-full resize-none overflow-hidden"
                 placeholder="添加备注"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}

@@ -199,20 +199,20 @@ export default function SidePannel() {
         </div>
 
         {/* 新建列表按钮 */}
-        <div className="flex w-full bg-white dark:bg-zinc-800 border-t">
+        <div className="flex w-full bg-zinc-100 dark:bg-zinc-800 border-t">
           <button
             onClick={() => {
               createNewTodoSet();
             }}
             className={cn(
               "flex-1 flex items-center gap-2 p-2 rounded-sm text-sm text-gray-800 dark:text-gray-200 ",
-              "hover:bg-gray-100 dark:hover:bg-zinc-700",
+              "hover:bg-gray-200 dark:hover:bg-zinc-700",
             )}
           >
             <Plus size={16} />
             新建列表
           </button>
-          <button className="px-2 h-full hover:bg-gray-100 dark:hover:bg-zinc-700 rounded-sm">
+          <button className="px-2 h-full hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-sm">
             <FolderPlus size={16} />
           </button>
         </div>
