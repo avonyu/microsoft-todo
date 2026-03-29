@@ -112,8 +112,18 @@ export default function SidePannel() {
   const { actions } = useTodo();
   const { data: session } = useSession();
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = localStorage.getItem('side-panel-width');
+    return saved ? parseInt(saved, 10) : 250;
+  });
   const sets = useGetSets();
   const smartListSettings = useGetSmartListSettings();
+
+  const handleResizeStop = (_e: MouseEvent | TouchEvent, _direction: string, _ref: HTMLElement, d: { width: number; height: number }) => {
+    const newWidth = sidebarWidth + d.width;
+    setSidebarWidth(newWidth);
+    localStorage.setItem('side-panel-width', newWidth.toString());
+  };
 
   const createNewTodoSet = async () => {
     if (!session?.user?.id) return;
@@ -153,10 +163,18 @@ export default function SidePannel() {
 
   return (
     <Resizable
-      defaultSize={{ width: 250 }}
+      size={{ width: sidebarWidth }}
+      onResizeStop={handleResizeStop}
       enable={{ right: true }}
       minWidth={220}
       maxWidth={400}
+      handleStyles={{
+        right: {
+          width: "6px",
+          cursor: "ew-resize",
+          backgroundColor: "transparent",
+        },
+      }}
     >
       <aside className="flex flex-col h-full w-full relative bg-zinc-100 dark:bg-zinc-800">
         {/* 侧边栏内容 */}

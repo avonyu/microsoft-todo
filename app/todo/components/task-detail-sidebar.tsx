@@ -50,6 +50,11 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
   const [comment, setComment] = useState('')
   const [isEditingContent, setIsEditingContent] = useState(false)
   const [editedContent, setEditedContent] = useState('')
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    // 从 localStorage 读取记忆的宽度
+    const saved = localStorage.getItem('task-detail-sidebar-width');
+    return saved ? parseInt(saved, 10) : initialWidth;
+  });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const task = state.tasks.find((t) => t.id === taskId);
 
@@ -62,6 +67,13 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
   useEffect(() => {
     adjustTextareaHeight();
   }, [comment]);
+
+  // 记忆宽度到 localStorage
+  const handleResizeStop = (_e: MouseEvent | TouchEvent, _direction: string, _ref: HTMLElement, d: { width: number; height: number }) => {
+    const newWidth = sidebarWidth + d.width;
+    setSidebarWidth(newWidth);
+    localStorage.setItem('task-detail-sidebar-width', newWidth.toString());
+  };
 
   if (!task) return null;
 
@@ -129,7 +141,8 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
 
   return (
     <Resizable
-      defaultSize={{ width: initialWidth }}
+      size={{ width: sidebarWidth }}
+      onResizeStop={handleResizeStop}
       enable={{ left: true }}
       minWidth={300}
       maxWidth={600}
@@ -139,11 +152,6 @@ export function TaskDetailSidebar({ taskId, onClose, initialWidth = 380, bgColor
           cursor: "ew-resize",
           backgroundColor: "transparent",
         },
-      }}
-      handleComponent={{
-        left: (
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize hover:bg-blue-400 transition-colors rounded-l-md" />
-        ),
       }}
     >
       <div className="flex flex-col h-full relative bg-zinc-100 dark:bg-zinc-800 border-l border-gray-200 dark:border-zinc-700">
